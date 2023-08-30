@@ -1,0 +1,79 @@
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers, Model
+import tensorflow_probability as tfp
+K = keras.backend
+
+from tensorflow_probability import layers as tfpl
+from keras.engine import data_adapter
+import keras_tuner as kt
+
+import tensorflow as tf
+import tensorflow_probability as tfp
+from tensorflow.keras import Model
+from tensorflow.keras.layers import Dense, Input, Dropout, Softmax, Flatten, Concatenate, Reshape, Layer
+from tensorflow.keras import optimizers
+from tensorflow.keras import regularizers
+from tensorflow import keras
+import numpy as np
+
+
+### Sampling class for variational node
+class Sampling(keras.layers.Layer):
+    def call(self, inputs):
+        mean, log_var = inputs
+        return K.random_normal(tf.shape(log_var)) * K.exp(log_var / 2) + mean
+    
+### 
+
+def build_encoder(Xtrain, settings):
+
+    input_layer = Input(shape=Xtrain.shape[1:]) 
+    lays = Flatten()(input_layer)
+    
+    for hidden in settings["encoding_nodes"]:
+        lays = Dense(hidden, activation=settings["activation"],
+                       kernel_regularizer=tf.keras.regularizers.l1_l2(l1=0.00, l2=0.00),
+                       bias_initializer=tf.keras.initializers.RandomNormal(seed=settings["seed"]),
+                       kernel_initializer=tf.keras.initializers.RandomNormal(seed=settings["seed"]))(lays)
+
+    code_mean = layers.Dense(settings["code_nodes"])(lays)
+    code_log_var = layers.Dense(settings["code_nodes"])(lays)
+    code = Sampling()([code_mean, code_log_var])
+
+    encoder = Model(inputs = [input_layer],
+                outputs = [code_mean, code_log_var, code],
+                name = "encoder")
+    
+    return encoder, input_layer
+    
+def build_decoder(Xtrain, settings):
+    input_layer = Input(shape=(settings['code_nodes']))
+    lays = Layer()(input_layer)
+
+    for hidden in settings["encoding_nodes"][::-1]:
+        lays = Dense(hidden, activation=settings["activation"],
+                    kernel_regularizer=tf.keras.regularizers.l1_l2(l1=0.00, l2=0.00),
+                    bias_initializer=tf.keras.initializers.RandomNormal(seed=settings["seed"]),
+                    kernel_initializer=tf.keras.initializers.RandomNormal(seed=settings["seed"]))(lays)
+        
+    lays = Dense(np.prod(Xtrain.shape[1:]))
+    output_layer = Reshape(Xtrain.shape[1:])(layers)
+
+    decoder = Model(inputs = [input_layer],
+                    outputs = [output_layer],
+                    name = 'decoder')
+    
+    return decoder
+    
+def build_VED(Xtrain, settings):
+
+    encoder, input_layer = build_encoder(Xtrain, settings)
+    decoder = build_decoder(Xtrain, settings)
+
+    code = encoder(input_layer)
+    reconstruction = decoder(code)
+    ved = Model(inputs=[input_layer], outputs=[reconstruction], name='VED')
+
+    return ved, encoder, decoder
