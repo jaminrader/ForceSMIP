@@ -27,6 +27,7 @@ experiments = {
 		#Metrics:
 		#Notes:
 		"seed"        : 0 ,
+		"learn_rate"  : .001,
 		"patience"    : 50,
 		"batch_size"  : 64,
         	"max_epochs"  : 5_000,

@@ -41,7 +41,7 @@ evalPeriods = {
 nlat = 72
 nlon = 144
 
-def load_model(model,var,timecut="Tier1",ntrainmems=10):
+def load_model(model,var,timecut="Tier1",ntrainmems=20):
 
     filelist = root_dir + "Training/" + cmipTable[var] + "/" + var + "/" + model + "/" + var + "*.nc"
     filelist = glob.glob(filelist)
@@ -91,3 +91,43 @@ def make_X_data(models = ["CESM2","MIROC6","CanESM5"], var = "tos", timecut = "T
     return X
 
 
+def make_Y_data(models = ["CESM2","MIROC6","CanESM5"], var = "tos", timecut = "Tier1", nmems = 20):
+    
+    nmodels = len(models)
+
+    timebds = evalPeriods[timecut]
+    time1 = int(timebds[0][:4])
+    time2 = int(timebds[1][:4])
+
+    ntime = time2-time1+1
+
+    Yforced = np.empty((ntime*nmems*nmodels,nlat,nlon))+np.nan
+    Yinternal = np.empty((ntime*nmems*nmodels,nlat,nlon))+np.nan
+    Yfull = np.empty((ntime*nmems*nmodels,nlat,nlon))+np.nan
+    
+    for imod, model in enumerate(models):
+
+        nfullmems = fullmems[model]
+        
+        da=load_model(model,var,timecut,nfullmems)
+        
+        da_np = np.asarray(da)
+        da_f_np = np.mean(da_np,axis=0,keepdims=True)
+        da_i_np = da_np-da_f_np
+        
+        Yloop = np.empty((nmems*ntime,nlat,nlon))+np.nan
+        Yloop_i = np.empty((nmems*ntime,nlat,nlon))+np.nan
+        Yloop_f = np.empty((nmems*ntime,nlat,nlon))+np.nan
+        
+        for imem in range(nmems):
+            Yloop_f[imem*ntime:(imem+1)*ntime] = da_f_np
+            Yloop_i[imem*ntime:(imem+1)*ntime] = da_i_np[imem,:,:,:]
+            Yloop[imem*ntime:(imem+1)*ntime] = da_np[imem,:,:,:]
+
+        Yfull[nmems*ntime*imod:nmems*ntime*(imod+1)] = Yloop
+        Yforced[nmems*ntime*imod:nmems*ntime*(imod+1)] = Yloop_f
+        Yinternal[nmems*ntime*imod:nmems*ntime*(imod+1)] = Yloop_i
+    
+    return Yforced,Yinternal,Yfull
+
+    
