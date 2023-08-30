@@ -63,7 +63,7 @@ def load_model(model,var,timecut="Tier1",ntrainmems=10):
     
     return all_ens
 
-def make_Xdef make_X_data(models = ["CESM2","MIROC6","CanESM5"], var = "tos", timecut = "Tier1", nmems = 20):
+def make_X_data(models = ["CESM2","MIROC6","CanESM5"], var = "tos", timecut = "Tier1", nmems = 20):
     nmodels = len(models)
 
     timebds = evalPeriods[timecut]

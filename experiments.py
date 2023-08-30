@@ -30,6 +30,7 @@ experiments = {
 		"patience"    : 50,
 		"batch_size"  : 64,
         	"max_epochs"  : 5_000,
+                "metric"      : "",
 
 		"std_method"  : "",
 		"variable"    : "",
@@ -43,7 +44,7 @@ experiments = {
           	"CNN_strides" : [1],
 
 		"encoding_nodes" : [20, 20, 10],
-    		"code_nodes" : 1,
-    		"activation" : "linear",
+    		"code_nodes"     : 1,
+    		"activation"     : "linear",
 	},
 }
