@@ -20,32 +20,36 @@ def get_experiment(exp_name, base_exp_name=None, settings_overwrite=None):
 
     return settings
 
+def get_experiment_settings(exp_name):
+
+    return experiments[exp_name]
 
 experiments = {
-	"exp_template" : {
-		#Ran by: 
-		#Metrics:
-		#Notes:
-		"seed"        : 0 ,
-		"learn_rate"  : .001,
-		"patience"    : 50,
-		"batch_size"  : 64,
-        	"max_epochs"  : 5_000,
-                "metric"      : "",
+    "exp_template" : {
+        #Ran by: 
+        #Metrics:
+        #Notes:
+        "seed"        : 0 ,
+        "learn_rate"  : .001,
+        "patience"    : 50,
+        "batch_size"  : 64,
+        "max_epochs"  : 5_000,
+        "metric"      : "",
+        
+        "std_method"  : "",
+        "variable"    : "",
+        "nmodels"     : [],
+        "nmembers"    : [],
+        "time_range"  : 0,
 
-		"std_method"  : "",
-		"variable"    : "",
-		"nmodels"     : [],
-		"nmembers"    : [],
-		"time_range"  : 0,
-		
-		"CNN_blocks"  : [2],
-          	"CNN_filters" : [32],
-          	"CNN_kernals" : [3],
-          	"CNN_strides" : [1],
+        "CNN_blocks"  : [2],
+        "CNN_filters" : [32],
+        "CNN_kernals" : [3],
+        "CNN_strides" : [1],
 
-		"encoding_nodes" : [20, 20, 10],
-    		"code_nodes"     : 1,
-    		"activation"     : "linear",
-	},
+        "encoding_nodes" : [20, 20, 10],
+        "code_nodes"     : 1,
+        "activation"     : "linear",
+        "variational_loss": .001
+    },
 }
