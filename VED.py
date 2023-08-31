@@ -58,7 +58,7 @@ def build_decoder(Xtrain, settings):
                     bias_initializer=tf.keras.initializers.RandomNormal(seed=settings["seed"]),
                     kernel_initializer=tf.keras.initializers.RandomNormal(seed=settings["seed"]))(lays)
         
-    lays = Dense(np.prod(Xtrain.shape[1:]))(lays)
+    lays = Dense(np.prod(Xtrain.shape[1:]), activation='linear')(lays)
     output_layer = Reshape(Xtrain.shape[1:])(lays)
 
     decoder = Model(inputs = [input_layer],
