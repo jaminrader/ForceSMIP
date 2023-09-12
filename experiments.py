@@ -8,15 +8,15 @@ def get_experiment(exp_name, base_exp_name=None, settings_overwrite=None):
         settings = settings_overwrite[exp_name]
     settings["exp_name"] = exp_name
 
-    if base_exp_name is not None:
-        settings["base_exp_name"] = base_exp_name
+    # if base_exp_name is not None:
+        # settings["base_exp_name"] = base_exp_name
 
-    if "ignore_smooth_warning" in list(settings.keys()) and settings["ignore_smooth_warning"] == True:
-        print('IGNORING SMOOTHING WARNINGS')
-    else:
-        assert settings["lead_time"] >= 0, f"lead_time must be non-negative."
-        assert settings["smooth_len_input"] >= 0, f"input smoothing must be non-negative."
-        assert settings["smooth_len_output"] <= 0, f"output smoothing must be non-positive."
+    # if "ignore_smooth_warning" in list(settings.keys()) and settings["ignore_smooth_warning"] == True:
+        # print('IGNORING SMOOTHING WARNINGS')
+    # else:
+        # assert settings["lead_time"] >= 0, f"lead_time must be non-negative."
+        # assert settings["smooth_len_input"] >= 0, f"input smoothing must be non-negative."
+        # assert settings["smooth_len_output"] <= 0, f"output smoothing must be non-positive."
 
     return settings
 
@@ -29,27 +29,302 @@ experiments = {
         #Ran by: 
         #Metrics:
         #Notes:
-        "seed"        : 0 ,
-        "learn_rate"  : .001,
-        "patience"    : 50,
-        "batch_size"  : 64,
-        "max_epochs"  : 5_000,
-        "metric"      : "",
+        "seed"          : 0 ,
+        "learn_rate"    : .001,
+        "patience"      : 50,
+        "batch_size"    : 64,
+        "max_epochs"    : 5_000,
+        "metric"        : "",
         
-        "std_method"  : "",
-        "variable"    : "",
-        "nmodels"     : [],
-        "nmembers"    : [],
-        "time_range"  : 0,
+        "input_std_method"    : "", #self, feature, overall
+        "output_std_method"   : "", # feature, overall
+        "input_variable": ["tos","pr",],
+        "target_variable": "tos",
+        "target_component": "internal", #forced or internal
+        "train_models"  : [],
+        "val_models"    : [],
+        "train_members" : [],
+        "val_members"   : [],
+        "time_range"    : 0,
 
-        "CNN_blocks"  : [2],
-        "CNN_filters" : [32],
-        "CNN_kernals" : [3],
-        "CNN_strides" : [1],
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
 
         "encoding_nodes" : [20, 20, 10],
         "code_nodes"     : 1,
         "activation"     : "linear",
         "variational_loss": .001
+    },
+    
+    "test_exp" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 50,
+        "batch_size"    : 64,
+        "max_epochs"    : 10,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["tos","pr",],
+        "target_variable": "tos",
+        "target_component": "internal", #forced or internal
+        "train_models"  : ["CESM2",],
+        "val_models"    : ["CESM2",],
+        "train_members" : np.arange(10),
+        "val_members"   : np.arange(11, 13),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [20, 20, 10],
+        "code_nodes"     : 10,
+        "activation"     : "linear",
+        "variational_loss": 0.0001
+    },
+    
+    "test_exp_tos" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 50,
+        "batch_size"    : 64,
+        "max_epochs"    : 10,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["tos",],
+        "target_variable": "tos",
+        "target_component": "internal", #forced or internal
+        "train_models"  : ["CESM2",],
+        "val_models"    : ["CESM2",],
+        "train_members" : np.arange(10),
+        "val_members"   : np.arange(11, 13),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [20, 20, 10],
+        "code_nodes"     : 10,
+        "activation"     : "linear",
+        "variational_loss": 0.0001
+    },
+    
+    "test_tos" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 50,
+        "batch_size"    : 64,
+        "max_epochs"    : 200,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["tos",],
+        "target_variable": "tos",
+        "target_component": "internal", #forced or internal
+        "train_models"  : ["CESM2",],
+        "val_models"    : ["CESM2",],
+        "train_members" : np.arange(10),
+        "val_members"   : np.arange(11, 13),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [20, 20, 10],
+        "code_nodes"     : 100,
+        "activation"     : "linear",
+        "variational_loss": 0.0001
+    },
+    
+    "tos_exp_0" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 50,
+        "batch_size"    : 64,
+        "max_epochs"    : 200,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["tos",],
+        "target_variable": "tos",
+        "target_component": "internal", #forced or internal
+        "train_models"  : ["CESM2",],
+        "val_models"    : ["CESM2",],
+        "train_members" : np.arange(10),
+        "val_members"   : np.arange(11, 13),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+    
+    "tos_exp_1" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 50,
+        "batch_size"    : 64,
+        "max_epochs"    : 200,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["tos",],
+        "target_variable": "tos",
+        "target_component": "internal", #forced or internal
+        "train_models"  : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
+        "val_models"    : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
+        "train_members" : np.arange(10),
+        "val_members"   : np.arange(11, 13),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+    
+    "tos_exp_forced0" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 50,
+        "batch_size"    : 64,
+        "max_epochs"    : 200,
+        "metric"        : "",
+        
+        "input_std_method"    : "feature", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["tos",],
+        "target_variable": "tos",
+        "target_component": "forced", #forced or internal
+        "train_models"  : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
+        "val_models"    : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
+        "train_members" : np.arange(10),
+        "val_members"   : np.arange(11, 13),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+    
+        "tos_exp_forced1" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 50,
+        "batch_size"    : 64,
+        "max_epochs"    : 200,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["tos",],
+        "target_variable": "tos",
+        "target_component": "forced", #forced or internal
+        "train_models"  : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
+        "val_models"    : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
+        "train_members" : np.arange(10),
+        "val_members"   : np.arange(11, 13),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+    
+    "pr_exp_0" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 50,
+        "batch_size"    : 64,
+        "max_epochs"    : 200,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["pr",],
+        "target_variable": "pr",
+        "target_component": "internal", #forced or internal
+        "train_models"  : ["CESM2",],
+        "val_models"    : ["CESM2",],
+        "train_members" : np.arange(20),
+        "val_members"   : np.arange(21, 25),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+    
+    "pr_exp_1" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 50,
+        "batch_size"    : 64,
+        "max_epochs"    : 200,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["pr",],
+        "target_variable": "pr",
+        "target_component": "internal", #forced or internal
+        "train_models"  : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
+        "val_models"    : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
+        "train_members" : np.arange(10),
+        "val_members"   : np.arange(11, 13),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
     },
 }

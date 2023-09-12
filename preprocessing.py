@@ -38,10 +38,21 @@ evalPeriods = {
     "Tier2": ("1900-01-01", "2022-12-31"),
     "Tier3": ("1979-01-01", "2022-12-31"),
 }
+
+fullmems = {
+    "MIROC6": 50,
+    "CESM2": 50,
+    "CanESM5": 25,
+    "MPI-ESM1-2-LR": 30,
+    "MIROC-ES2L": 30,
+}
+
+
 nlat = 72
 nlon = 144
 
 def load_model(model,var,timecut="Tier1",ntrainmems=20):
+    print(root_dir, cmipTable[var], var, model)
 
     filelist = root_dir + "Training/" + cmipTable[var] + "/" + var + "/" + model + "/" + var + "*.nc"
     filelist = glob.glob(filelist)
@@ -91,7 +102,30 @@ def make_X_data(models = ["CESM2","MIROC6","CanESM5"], var = "tos", timecut = "T
     return X
 
 
-def make_Y_data(models = ["CESM2","MIROC6","CanESM5"], var = "tos", timecut = "Tier1", nmems = 20):
+def make_data(models = ["CESM2","MIROC6","CanESM5"], var = "tos", timecut = "Tier1", mems = np.arange(20)):
+    
+    # models: a list of models from     "MIROC6
+    #                                    "CESM2"
+    #                                   "CanESM5"
+    #                                   "MPI-ESM1-2-LR"
+    #                                   "MIROC-ES2L"
+    
+    # var: a variable string from     "pr"
+    #                                 "psl"
+    #                                 "tas"
+    #                                 "zmta"
+    #                                 "tos"
+    #                                 "siconc"
+    #                                 "monmaxpr":
+    #                                 "monmaxtasmax"
+    #                                 "monmintasmin"
+    
+    # timecut: from the evaluation Tiers 
+    #     "Tier1" ("1950-01-01", "2022-12-31"),
+    #     "Tier2" ("1900-01-01", "2022-12-31"),
+    #     "Tier3" ("1979-01-01", "2022-12-31"),
+    
+    # mems: a list of members to use
     
     nmodels = len(models)
 
@@ -101,9 +135,11 @@ def make_Y_data(models = ["CESM2","MIROC6","CanESM5"], var = "tos", timecut = "T
 
     ntime = time2-time1+1
 
+    nmems = len(mems)
+    
     Yforced = np.empty((ntime*nmems*nmodels,nlat,nlon))+np.nan
     Yinternal = np.empty((ntime*nmems*nmodels,nlat,nlon))+np.nan
-    Yfull = np.empty((ntime*nmems*nmodels,nlat,nlon))+np.nan
+    Xfull = np.empty((ntime*nmems*nmodels,nlat,nlon))+np.nan
     
     for imod, model in enumerate(models):
 
@@ -119,15 +155,41 @@ def make_Y_data(models = ["CESM2","MIROC6","CanESM5"], var = "tos", timecut = "T
         Yloop_i = np.empty((nmems*ntime,nlat,nlon))+np.nan
         Yloop_f = np.empty((nmems*ntime,nlat,nlon))+np.nan
         
-        for imem in range(nmems):
+        for imem, mem in enumerate(mems):
             Yloop_f[imem*ntime:(imem+1)*ntime] = da_f_np
-            Yloop_i[imem*ntime:(imem+1)*ntime] = da_i_np[imem,:,:,:]
-            Yloop[imem*ntime:(imem+1)*ntime] = da_np[imem,:,:,:]
+            Yloop_i[imem*ntime:(imem+1)*ntime] = da_i_np[mem,:,:,:]
+            Yloop[imem*ntime:(imem+1)*ntime] = da_np[mem,:,:,:]
 
-        Yfull[nmems*ntime*imod:nmems*ntime*(imod+1)] = Yloop
+        Xfull[nmems*ntime*imod:nmems*ntime*(imod+1)] = Yloop
         Yforced[nmems*ntime*imod:nmems*ntime*(imod+1)] = Yloop_f
         Yinternal[nmems*ntime*imod:nmems*ntime*(imod+1)] = Yloop_i
     
-    return Yforced,Yinternal,Yfull
+    return Xfull,Yforced,Yinternal
 
+def stack_variable(X_tuple):
     
+    Xout = np.stack(X_tuple,axis=-1)
+    
+    return Xout
+    
+def make_eval_mem(evalmem="1H",var="tos",timecut="Tier1"):
+    
+    filelist = root_dir + "Evaluation-"+timecut+"/" + cmipTable[var] + "/" + var + "/" + var + "*" + evalmem + "*.nc"
+    file = glob.glob(filelist)[0]
+    ds = xr.open_dataset(file)
+    varin = ds[cmipVar[var]]
+    varmean = varin.groupby("time.year").mean()
+    varmean_np = np.asarray(varmean)
+    
+    return varmean_np
+
+def make_eval_mem_monthly(evalmem="1H",var="tos",timecut="Tier1"):
+    
+    filelist = root_dir + "Evaluation-"+timecut+"/" + cmipTable[var] + "/" + var + "/" + var + "*" + evalmem + "*.nc"
+    file = glob.glob(filelist)[0]
+    ds = xr.open_dataset(file)
+    varin = ds[cmipVar[var]]
+    #varmean = varin.groupby("time.year").mean()
+    varin_np = np.asarray(varin)
+    
+    return varin_np
