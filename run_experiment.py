@@ -70,8 +70,6 @@ for ii, var in enumerate(experiment_settings["input_variable"]):
     # Load the information
     At, Ft, It, Av, Fv, Iv = preprocessing.load_npz(experiment_settings)
 
-    import nada
-
     # put these into an array in the shape [samples, lat, lon, variable]
     if ii == 0:
         Atrain = At[:, :, :, np.newaxis]
@@ -139,9 +137,15 @@ Ptest = ved.predict(Xtest)
 
 Ptrain_us, Pval_us, Ptest_us = Doer.unstandardize(Ptrain, Pval, Ptest)
 
-Ptrain_out = Atrain-Ptrain_us
-Pval_out = Aval-Pval_us
-Ptest_out = Atest-Ptest_us
+if experiment_settings["target_component"] == 'internal':
+    Ptrain_out = Atrain-Ptrain_us
+    Pval_out = Aval-Pval_us
+    Ptest_out = Atest-Ptest_us
+elif experiment_settings["target_component"] == 'forced':
+    Ptrain_out = Ptrain_us
+    Pval_out = Pval_us
+    Ptest_out = Ptest_us     
+
 os.system('mkdir ' + experiment_settings['pred_dir'])
 arr_name = experiment_settings['pred_dir'] + ARGS.exp_name+str(experiment_settings["seed"])+"_preds.npz"
 np.savez(arr_name,Ptrain=Ptrain_out,
