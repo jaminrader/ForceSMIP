@@ -8,6 +8,7 @@ def get_experiment(exp_name, base_exp_name=None, settings_overwrite=None):
         settings = settings_overwrite[exp_name]
     settings["exp_name"] = exp_name
     settings["npz_dir"] = 'exp_data/'
+    settings["pred_dir"] = 'saved_predictions/'
 
     # if base_exp_name is not None:
         # settings["base_exp_name"] = base_exp_name

@@ -13,11 +13,11 @@ from standardize import *
 # -------------------------------------------------------------------------------------------
 
 # some paths -- may not be needed
-casper_data_path = '/glade/campaign/cgd/cas/asphilli/ForceSMIP'
-training_path = os.path.join(casper_data_path, 'Training')
-eval_path = os.path.join(casper_data_path, 'Evaluation-Tier1')
-eval_pr = os.path.join(eval_path, 'Amon', 'pr', 'pr_mon_1H.195001-202212.nc')
-eval_tos = os.path.join(eval_path, 'Omon', 'tos', 'tos_mon_1H.195001-202212.nc')
+# casper_data_path = '/glade/campaign/cgd/cas/asphilli/ForceSMIP'
+# training_path = os.path.join(casper_data_path, 'Training')
+# eval_path = os.path.join(casper_data_path, 'Evaluation-Tier1')
+# eval_pr = os.path.join(eval_path, 'Amon', 'pr', 'pr_mon_1H.195001-202212.nc')
+# eval_tos = os.path.join(eval_path, 'Omon', 'tos', 'tos_mon_1H.195001-202212.nc')
 
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
@@ -69,6 +69,9 @@ for ii, var in enumerate(experiment_settings["input_variable"]):
     
     # Load the information
     At, Ft, It, Av, Fv, Iv = preprocessing.load_npz(experiment_settings)
+
+    import nada
+
     # put these into an array in the shape [samples, lat, lon, variable]
     if ii == 0:
         Atrain = At[:, :, :, np.newaxis]
@@ -139,8 +142,8 @@ Ptrain_us, Pval_us, Ptest_us = Doer.unstandardize(Ptrain, Pval, Ptest)
 Ptrain_out = Atrain-Ptrain_us
 Pval_out = Aval-Pval_us
 Ptest_out = Atest-Ptest_us
-
-arr_name = 'saved_predictions/' + ARGS.exp_name+str(experiment_settings["seed"])+"_preds.npz"
+os.system('mkdir ' + experiment_settings['pred_dir'])
+arr_name = experiment_settings['pred_dir'] + ARGS.exp_name+str(experiment_settings["seed"])+"_preds.npz"
 np.savez(arr_name,Ptrain=Ptrain_out,
                   Pval=Pval_out,
                   Ptest=Ptest_out,
