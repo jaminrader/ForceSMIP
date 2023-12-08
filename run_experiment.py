@@ -56,14 +56,19 @@ tf.random.set_seed(experiment_settings["seed"])
 #     total_members = np.setdiff1d(total_members, rnd_inds)
 
 for ii, var in enumerate(experiment_settings["input_variable"]):
-    # load the training and validation sets for this variable
-    At, Ft, It = preprocessing.make_data(models=experiment_settings["train_models"], var=var,
-                                      timecut=experiment_settings["time_range"], mems=experiment_settings["train_members"])
+    # Check to see if the saved data has already been output
+    if not os.path.isfile(experiment_settings['npz_dir'] + experiment_settings['exp_name'] + '.npz'):
+        # load the training and validation sets for this variable
+        At, Ft, It = preprocessing.make_data(models=experiment_settings["train_models"], var=var,
+                                        timecut=experiment_settings["time_range"], mems=experiment_settings["train_members"])
 
-    Av, Fv, Iv = preprocessing.make_data(models=experiment_settings["val_models"], var=var,
-                                      timecut=experiment_settings["time_range"], mems=experiment_settings["val_members"])
+        Av, Fv, Iv = preprocessing.make_data(models=experiment_settings["val_models"], var=var,
+                                        timecut=experiment_settings["time_range"], mems=experiment_settings["val_members"])
+        
+        preprocessing.save_npz(experiment_settings, At, Ft, It, Av, Fv, Iv)
     
-    
+    # Load the information
+    At, Ft, It, Av, Fv, Iv = preprocessing.load_npz(experiment_settings)
     # put these into an array in the shape [samples, lat, lon, variable]
     if ii == 0:
         Atrain = At[:, :, :, np.newaxis]

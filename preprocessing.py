@@ -5,6 +5,7 @@ import glob
 import numpy as np
 import xarray as xr
 import gc
+import os
 
 if machine == 'casper':
     root_dir = "/glade/campaign/cgd/cas/asphilli/ForceSMIP/"
@@ -165,6 +166,17 @@ def make_data(models = ["CESM2","MIROC6","CanESM5"], var = "tos", timecut = "Tie
         Yinternal[nmems*ntime*imod:nmems*ntime*(imod+1)] = Yloop_i
     
     return Xfull,Yforced,Yinternal
+
+def save_npz(settings, A_train, F_train, I_train, A_val, F_val, I_val):
+    os.system('mkdir ' +  settings['npz_dir'])
+    np.savez(settings['npz_dir'] + settings['exp_name'] + '.npz', At = A_train, Ft = F_train, It = I_train, 
+             Av = A_val, Fv = F_val, Iv = I_val)
+
+def load_npz(settings):
+    npzdat = np.load(settings['npz_dir'] + settings['exp_name'] + '.npz')
+    At, Ft, It, Av, Fv, Iv = npzdat['At'], npzdat['Ft'], npzdat['It'], npzdat['Av'], npzdat['Fv'], npzdat['Iv']
+    return At, Ft, It, Av, Fv, Iv
+    
 
 def stack_variable(X_tuple):
     
