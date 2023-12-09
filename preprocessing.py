@@ -110,7 +110,7 @@ def make_data(models=["CESM2", "MIROC6", "CanESM5"], var="tos", timecut="Tier1",
     
     mems: a list of members to use
     """
-    # number of members requested --- why is mems an arange and not a number?
+    # number of members requested
     nmems = len(mems)
 
     # go through each model separately (targets are model specific)
@@ -121,15 +121,17 @@ def make_data(models=["CESM2", "MIROC6", "CanESM5"], var="tos", timecut="Tier1",
         assert nmems <= nfullmems, f"more members requested ({nmems}) than available ({nfullmems})"
         # load the members for this model/variable into an xarray
         # returns the correct time period given the tier
-        da = load_model(model, var, timecut, nmems)
+        # note it loads all members, so the forced response is correct, then picks members based on mems
+        da = load_model(model, var, timecut, nfullmems)
         # convert from xarray to a numpy array: dimensions are [members, time, lat, lon]
         da_np = np.asarray(da)
         # get the forced response as the ensemble mean across all members (0th dimension)
         da_f_np = np.mean(da_np, axis=0, keepdims=True)
         # internal variability is the difference between the full signal and the forced response
-        da_i_np = da_np - da_f_np
+        # only use the requested members
+        da_i_np = da_np[mems] - da_f_np
         # reshape these to dimensions: [samples, lat, lon]
-        da_np = np.reshape(da_np, (-1, nlat, nlon))
+        da_np = np.reshape(da_np[mems], (-1, nlat, nlon))
         # for forced response, repeat nmems times to match full and internal
         da_f_np = np.reshape([da_f_np]*nmems, (-1, nlat, nlon))
         da_i_np = np.reshape(da_i_np, (-1, nlat, nlon))
