@@ -11,6 +11,8 @@ if machine == 'casper':
     root_dir = "/glade/campaign/cgd/cas/asphilli/ForceSMIP/"
 elif machine == 'asha':
     root_dir = "/barnes-scratch/DATA/ForceSMIP/"
+########################################################
+# remember to remove this
 root_dir = '/Volumes/Data/Martin_Fernandez/ForceSMIP/'
     
 cmipTable = {
@@ -40,7 +42,6 @@ evalPeriods = {
     "Tier2": ("1900-01-01", "2022-12-31"),
     "Tier3": ("1979-01-01", "2022-12-31"),
 }
-
 fullmems = {
     "MIROC6": 50,
     "CESM2": 50,
@@ -48,7 +49,6 @@ fullmems = {
     "MPI-ESM1-2-LR": 30,
     "MIROC-ES2L": 30,
 }
-
 nlat = 72
 nlon = 144
 
@@ -164,26 +164,30 @@ def stack_variable(X_tuple):
     
 
 def make_eval_mem(evalmem="1H", var="tos", timecut="Tier1"):
-    
+    "evalmem can be 1A through 1J, so determines the member"
+    # get a member from one of the evaulation data sets
     filelist = root_dir + "Evaluation-"+timecut+"/" + cmipTable[var] + "/" + var + "/" + var + "*" + evalmem + "*.nc"
+    # glob the full file name (zero index to remove from list)
     file = glob.glob(filelist)[0]
     ds = xr.open_dataset(file)
+    # get the specified variable and make yearly
     varin = ds[cmipVar[var]]
     varmean = varin.groupby("time.year").mean()
-    varmean_np = np.asarray(varmean)
-    
-    return varmean_np
+    # return as a numpy array    
+    return np.asarray(varmean)
 
 
 def make_eval_mem_monthly(evalmem="1H", var="tos", timecut="Tier1"):
-    
+    "evalmem can be 1A through 1J, so determines the member"
+    # get a member from one of the evaulation data sets
     filelist = root_dir + "Evaluation-"+timecut+"/" + cmipTable[var] + "/" + var + "/" + var + "*" + evalmem + "*.nc"
+    # glob the full file name (zero index to remove from list)
     file = glob.glob(filelist)[0]
+    # get the specified variable
     ds = xr.open_dataset(file)
     varin = ds[cmipVar[var]]
-    varin_np = np.asarray(varin)
-    
-    return varin_np
+    # return as a numpy array 
+    return np.asarray(varin)
 
 
 # def make_X_data(models=["CESM2","MIROC6","CanESM5"], var="tos", timecut="Tier1", nmems=20):
