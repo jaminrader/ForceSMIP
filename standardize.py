@@ -76,6 +76,9 @@ class DataDoer():
             self.tstd = self.fstd
         elif self.settings["target_component"] == "internal":
             self.Ttrain = self.Itrain
+            #######################################
+            # should this be self.Ival?
+            #######################################
             self.Tval = self.Fval
             self.tmean = self.imean
             self.tstd = self.istd
@@ -87,12 +90,12 @@ class DataDoer():
         self.Ttrain = np.nan_to_num(self.Ttrain)
         self.Tval = np.nan_to_num(self.Tval)
             
-    def unstandardize(self,Ptrain, Pval, Ptest):
+    def unstandardize(self, Ptrain, Pval, Ptest):
         print('Returning (Ptrain_us, Pval_us, Ptest_us)')
         Ptrain_us = Ptrain * self.tstd + self.tmean
         Pval_us = Pval * self.tstd + self.tmean
         Ptest_us = Ptest * self.tstd + self.tmean
-        return Ptrain_us, Pval_us, Ptest
+        return Ptrain_us, Pval_us, Ptest_us
             
     def do(self):
         print('Returning (Xtrain, Xval, Xtest, Ttrain, Tval)')
