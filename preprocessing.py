@@ -148,16 +148,18 @@ def make_data(models=["CESM2", "MIROC6", "CanESM5"], var="tos", timecut="Tier1",
     return Xfull, Yforced, Yinternal
 
 
-def save_npz(settings, A_train, F_train, I_train, A_val, F_val, I_val):
+def save_npz(settings, A_train, F_train, I_train, A_val, F_val, I_val, A_test, F_test, I_test):
     os.system('mkdir ' +  settings['npz_dir'])
-    np.savez(settings['npz_dir'] + settings['exp_name'] + '.npz', At=A_train, Ft=F_train, It=I_train, 
-             Av=A_val, Fv=F_val, Iv=I_val)
+    np.savez(settings['npz_dir'] + settings['exp_name'] + '.npz', Atr=A_train, Ftr=F_train, Itr=I_train, 
+             Ava=A_val, Fva=F_val, Iva=I_val, Ate=A_test, Fte=F_test, Ite=I_test)
 
 
 def load_npz(settings):
     npzdat = np.load(settings['npz_dir'] + settings['exp_name'] + '.npz')
-    At, Ft, It, Av, Fv, Iv = npzdat['At'], npzdat['Ft'], npzdat['It'], npzdat['Av'], npzdat['Fv'], npzdat['Iv']
-    return At, Ft, It, Av, Fv, Iv
+    Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite = (npzdat['Atr'], npzdat['Ftr'], npzdat['Itr'],
+                                                   npzdat['Ava'], npzdat['Fva'], npzdat['Iva'],
+                                                   npzdat['Ate'], npzdat['Fte'], npzdat['Ite'])
+    return Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite
     
 
 def stack_variable(X_tuple):
