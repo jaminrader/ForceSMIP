@@ -45,8 +45,10 @@ experiments = {
         "target_component": "internal", #forced or internal
         "train_models"  : [],
         "val_models"    : [],
+        "test_models"   : [],
         "train_members" : [],
         "val_members"   : [],
+        "test_members"  : [],
         "time_range"    : 0,
 
         "CNN_blocks"    : [2],
@@ -75,8 +77,10 @@ experiments = {
         "target_component": "internal", #forced or internal
         "train_models"  : ["CESM2",],
         "val_models"    : ["CESM2",],
+        "test_models"   : None,
         "train_members" : np.arange(10),
         "val_members"   : np.arange(11, 13),
+        "test_members"  : None,
         "time_range"    : "Tier1",
 
         "CNN_blocks"    : [2],
@@ -105,8 +109,10 @@ experiments = {
         "target_component": "internal", #forced or internal
         "train_models"  : ["CESM2",],
         "val_models"    : ["CESM2",],
+        "test_models"   : None,
         "train_members" : np.arange(10),
         "val_members"   : np.arange(11, 13),
+        "test_members"  : None,
         "time_range"    : "Tier1",
 
         "CNN_blocks"    : [2],
@@ -135,8 +141,10 @@ experiments = {
         "target_component": "internal", #forced or internal
         "train_models"  : ["CESM2",],
         "val_models"    : ["CESM2",],
+        "test_models"   : None,
         "train_members" : np.arange(10),
         "val_members"   : np.arange(11, 13),
+        "test_members"  : None,
         "time_range"    : "Tier1",
 
         "CNN_blocks"    : [2],
@@ -165,8 +173,10 @@ experiments = {
         "target_component": "internal", #forced or internal
         "train_models"  : ["CESM2",],
         "val_models"    : ["CESM2",],
+        "test_models"   : None,
         "train_members" : np.arange(10),
         "val_members"   : np.arange(11, 13),
+        "test_members"  : None,
         "time_range"    : "Tier1",
 
         "CNN_blocks"    : [2],
@@ -195,8 +205,10 @@ experiments = {
         "target_component": "internal", #forced or internal
         "train_models"  : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
         "val_models"    : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
+        "test_models"   : None,
         "train_members" : np.arange(10),
         "val_members"   : np.arange(11, 13),
+        "test_members"  : None,
         "time_range"    : "Tier1",
 
         "CNN_blocks"    : [2],
@@ -225,8 +237,10 @@ experiments = {
         "target_component": "forced", #forced or internal
         "train_models"  : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
         "val_models"    : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
+        "test_models"   : None,
         "train_members" : np.arange(10),
         "val_members"   : np.arange(11, 13),
+        "test_members"  : None,
         "time_range"    : "Tier1",
 
         "CNN_blocks"    : [2],
@@ -255,8 +269,10 @@ experiments = {
         "target_component": "forced", #forced or internal
         "train_models"  : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
         "val_models"    : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
+        "test_models"   : None,
         "train_members" : np.arange(10),
         "val_members"   : np.arange(11, 13),
+        "test_members"  : None,
         "time_range"    : "Tier1",
 
         "CNN_blocks"    : [2],
@@ -285,6 +301,8 @@ experiments = {
         "target_component": "internal", #forced or internal
         "train_models"  : ["CESM2",],
         "val_models"    : ["CESM2",],
+        "test_models"   : None,
+        "test_members"  : None,
         "train_members" : np.arange(20),
         "val_members"   : np.arange(21, 25),
         "time_range"    : "Tier1",
@@ -315,8 +333,10 @@ experiments = {
         "target_component": "internal", #forced or internal
         "train_models"  : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
         "val_models"    : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
+        "test_models"   : None,
         "train_members" : np.arange(10),
         "val_members"   : np.arange(11, 13),
+        "test_members"  : None,
         "time_range"    : "Tier1",
 
         "CNN_blocks"    : [2],
