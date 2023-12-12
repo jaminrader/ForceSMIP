@@ -1,22 +1,15 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers, Model
-# import tensorflow_probability as tfp
-K = keras.backend
-
-# from tensorflow_probability import layers as tfpl
-from tensorflow.python.keras.engine import data_adapter
-# import keras_tuner as kt
-
-import tensorflow as tf
-# import tensorflow_probability as tfp
-from tensorflow.keras import Model
 from tensorflow.keras.layers import Dense, Input, Dropout, Softmax, Flatten, Concatenate, Reshape, Layer
 from tensorflow.keras import optimizers
 from tensorflow.keras import regularizers
-from tensorflow import keras
-import numpy as np
+from tensorflow.python.keras.engine import data_adapter
+from tensorflow.keras import Model
+# from tensorflow_probability import layers as tfpl
+# import tensorflow_probability as tfp
+# import keras_tuner as kt
+K = keras.backend
 
 
 ### Sampling class for variational node
@@ -25,10 +18,10 @@ class Sampling(keras.layers.Layer):
         mean, log_var = inputs
         return K.random_normal(tf.shape(log_var)) * K.exp(log_var / 2) + mean
     
-### 
 
 def build_encoder(Xtrain, settings):
-
+    # Xtrain has dimensions: [sample x lat x lon x variable]
+    # input layer will have dimensions: [lat x lon x variable]
     input_layer = Input(shape=Xtrain.shape[1:]) 
     lays = Flatten()(input_layer)
     
@@ -38,8 +31,8 @@ def build_encoder(Xtrain, settings):
                        bias_initializer=tf.keras.initializers.RandomNormal(seed=settings["seed"]),
                        kernel_initializer=tf.keras.initializers.RandomNormal(seed=settings["seed"]))(lays)
 
-    code_mean = layers.Dense(settings["code_nodes"])(lays)
-    code_log_var = layers.Dense(settings["code_nodes"])(lays)
+    code_mean = Dense(settings["code_nodes"])(lays)
+    code_log_var = Dense(settings["code_nodes"])(lays)
     code = Sampling()([code_mean, code_log_var])
 
     encoder = Model(inputs = [input_layer],
@@ -48,7 +41,9 @@ def build_encoder(Xtrain, settings):
     
     return encoder, input_layer, code_mean, code_log_var, code
     
+
 def build_decoder(Xtrain, Ttrain, settings):
+    
     input_layer = Input(shape=(settings['code_nodes']))
     lays = Layer()(input_layer)
 
@@ -67,6 +62,7 @@ def build_decoder(Xtrain, Ttrain, settings):
     
     return decoder
     
+
 def build_VED(Xtrain, Ttrain, settings):
 
     encoder, input_layer, code_mean, code_log_var, code = build_encoder(Xtrain, settings)
@@ -80,6 +76,7 @@ def build_VED(Xtrain, Ttrain, settings):
     ved.add_loss(K.mean(latent_loss * settings['variational_loss']))
 
     return ved, encoder, decoder
+
 
 def train_VED(Xtrain, Ttrain, Xval, Tval, settings,):
     
