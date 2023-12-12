@@ -1,4 +1,4 @@
-machine = 'casper' # 'casper' or 'asha'
+machine = 'asha' # 'casper' or 'asha'
 
 # I/O / data wrangling
 import glob
@@ -165,17 +165,24 @@ def stack_variable(X_tuple):
     
 
 def make_eval_mem(evalmem="1H", var="tos", timecut="Tier1"):
-    "evalmem can be 1A through 1J, so determines the member"
-    # get a member from one of the evaulation data sets
-    filelist = root_dir + "Evaluation-"+timecut+"/" + cmipTable[var] + "/" + var + "/" + var + "*" + evalmem + "*.nc"
-    # glob the full file name (zero index to remove from list)
-    file = glob.glob(filelist)[0]
-    ds = xr.open_dataset(file)
-    # get the specified variable and make yearly
-    varin = ds[cmipVar[var]]
-    varmean = varin.groupby("time.year").mean()
+
+    if type(var) is not type([]):
+        var = [var]
+
+    ret_dat = []
+    for v in var:
+        # "evalmem can be 1A through 1J, so determines the member"
+        # get a member from one of the evaulation data sets
+        filelist = root_dir + "Evaluation-"+timecut+"/" + cmipTable[v] + "/" + v + "/" + v + "*" + evalmem + "*.nc"
+        # glob the full file name (zero index to remove from list)
+        file = glob.glob(filelist)[0]
+        ds = xr.open_dataset(file)
+        # get the specified variable and make yearly
+        varin = ds[cmipVar[v]]
+        varmean = varin.groupby("time.year").mean()
+        ret_dat.append(varmean)
     # return as a numpy array    
-    return np.asarray(varmean)
+    return np.stack(ret_dat, axis=-1)
 
 
 def make_eval_mem_monthly(evalmem="1H", var="tos", timecut="Tier1"):
