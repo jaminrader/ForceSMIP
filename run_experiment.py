@@ -15,7 +15,6 @@ import random
 # set up parser (run via command line, e.g. python3 run_experiment.py exp_name)
 PARSER = argparse.ArgumentParser()
 PARSER.add_argument('exp_name', type=str)
-PARSER.add_argument('--evalmem', type=str, required=False, default='1H')
 ARGS = PARSER.parse_args()
 
 # -------------------------------------------------------------------------------------------
@@ -51,7 +50,7 @@ for ii, var in enumerate(settings["input_variable"]):
                                         timecut=settings["time_range"], mems=settings["test_members"])
         else:
              # for compatibility, save something small as a placeholder
-             Ate, Fte, Ite = [np.zeros([1, 1, 1])] * 3
+             Ate, Fte, Ite = [np.zeros([1, 1, 1])+np.nan] * 3
         # save the preprocessed data             
         preprocessing.save_npz(settings, Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite)
     
@@ -139,7 +138,7 @@ else:
      if settings["target_component"] == 'internal':
           Ptest_us = Atest
      else:
-          Ptest_us = np.zeros(np.shape(Atest))    
+          Ptest_us = np.zeros(np.shape(Atest)) + np.nan
 
 # set the prediction output -- in both cases the forced response
 # either directly, or from full minus internal

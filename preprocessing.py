@@ -11,9 +11,6 @@ if machine == 'casper':
     root_dir = "/glade/campaign/cgd/cas/asphilli/ForceSMIP/"
 elif machine == 'asha':
     root_dir = "/barnes-scratch/DATA/ForceSMIP/"
-########################################################
-# remember to remove this
-root_dir = '/Volumes/Data/Martin_Fernandez/ForceSMIP/'
     
 cmipTable = {
     "pr": "Amon",

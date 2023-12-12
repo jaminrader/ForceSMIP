@@ -76,10 +76,7 @@ class DataDoer():
             self.tstd = self.fstd
         elif self.settings["target_component"] == "internal":
             self.Ttrain = self.Itrain
-            #######################################
-            # should this be self.Ival?
-            #######################################
-            self.Tval = self.Fval
+            self.Tval = self.Ival
             self.tmean = self.imean
             self.tstd = self.istd
             
