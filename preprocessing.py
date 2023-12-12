@@ -54,8 +54,9 @@ def load_model(model, var, timecut="Tier1", ntrainmems=20):
     print(root_dir, cmipTable[var], var, model)
     # get the list of all files (members) for this model and variable
     filelist = root_dir + "Training/" + cmipTable[var] + "/" + var + "/" + model + "/" + var + "*.nc"
-    filelist = glob.glob(filelist)
-    filelist = sorted(filelist)
+    filelist = np.array(glob.glob(filelist))
+    sorted = np.argsort([float(filelist[ii][filelist[ii].find('_r')+2:filelist[ii].find('i1')]) for ii in range(len(filelist))])
+    filelist = filelist[sorted]
     # time period to cut on
     timebds = evalPeriods[timecut]
 
