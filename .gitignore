@@ -4,3 +4,5 @@ saved_models/
 saved_predictions/
 exp_data/
 *.nc
+*.DS_
+
