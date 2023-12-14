@@ -10,6 +10,9 @@ import preprocessing
 from standardize import *
 import random
 
+# evaluation member labeling
+evalmems = ['1A', '1B', '1C', '1D', '1E', '1F', '1G', '1H', '1I', '1J',]
+
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
 # set up parser (run via command line, e.g. python3 run_experiment.py exp_name)
@@ -35,10 +38,13 @@ tf.random.set_seed(settings["seed"])
 # -------------------------------------------------------------------------------------------
 # pre-process data
 
-# for each input variable, save/load processed training/validation/testing? data and split off the target variable
-for ii, var in enumerate(settings["input_variable"]):
-    # Check to see if the saved data has already been output
-    if not os.path.isfile(settings['npz_dir'] + settings['exp_name'] + '.npz'):
+# Check to see if the saved data has already been output
+if os.path.isfile(settings['npz_dir'] + settings['exp_name'] + '.npz'):
+    # Load the information, if it is already saved
+    Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest = preprocessing.load_npz(settings)
+else:
+    # for each input variable, save/load processed training/validation/testing? data and split off the target variable
+    for ii, var in enumerate(settings["input_variable"]):
         # load the training and validation sets for this variable, dimensions: [samples x lat x lon]
         Atr, Ftr, Itr = preprocessing.make_data(models=settings["train_models"], var=var,
                                         timecut=settings["time_range"], mems=settings["train_members"])
@@ -46,59 +52,56 @@ for ii, var in enumerate(settings["input_variable"]):
                                         timecut=settings["time_range"], mems=settings["val_members"])
         # include our own testing split, if models and members have been set
         if settings["test_members"] is not None and settings["test_models"] is not None:
-             Ate, Fte, Ite = preprocessing.make_data(models=settings["test_models"], var=var,
+                Ate, Fte, Ite = preprocessing.make_data(models=settings["test_models"], var=var,
                                         timecut=settings["time_range"], mems=settings["test_members"])
         else:
-             # for compatibility, save something small as a placeholder
-             Ate, Fte, Ite = [np.zeros([1, 1, 1])+np.nan] * 3
-        # save the preprocessed data             
-        preprocessing.save_npz(settings, Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite)
-    
-    # Load the information
-    Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite = preprocessing.load_npz(settings)
+                # for compatibility, save something small as a placeholder
+                Ate, Fte, Ite = [np.zeros([1, 1, 1])+np.nan] * 3
 
-    # put these into an array in the shape [samples, lat, lon, variable]
-    if ii == 0:
-        Atrain, Aval, Atest = Atr[..., None], Ava[..., None], Ate[..., None]
-        Ftrain, Fval, Ftest = Ftr[..., None], Fva[..., None], Fte[..., None]
-        Itrain, Ival, Itest = Itr[..., None], Iva[..., None], Ite[..., None]
-    else:
-        Atrain = np.concatenate([Atrain, Atr[..., None]], axis=-1)
-        Aval = np.concatenate([Aval, Ava[..., None]], axis=-1)
-        Atest = np.concatenate([Atest, Ate[..., None]], axis=-1)
-        Ftrain = np.concatenate([Ftrain, Ftr[..., None]], axis=-1)
-        Fval = np.concatenate([Fval, Fva[..., None]], axis=-1)
-        Ftest = np.concatenate([Ftest, Fte[..., None]], axis=-1)
-        Itrain = np.concatenate([Itrain, Itr[..., None]], axis=-1)
-        Ival = np.concatenate([Ival, Iva[..., None]], axis=-1)
-        Itest = np.concatenate([Itest, Ite[..., None]], axis=-1)
-
-    # get the index of the target variable
-    if var == settings["target_variable"]:
-        target_ind = ii
+        # now, the evaluation data -- default to predicting for all 10 evaluation members
+        for evalmem in evalmems:
+            Aev_mem = preprocessing.make_eval_mem(evalmem=evalmem, var=var, timecut=settings["time_range"])
+            if evalmem == '1A':
+                Aev = Aev_mem
+            else:
+                Aev = np.vstack([Aev, Aev_mem])
         
-# use target_ind to get the target variable
-Ftrain = Ftrain[..., target_ind][..., None]
-Fval = Fval[..., target_ind][..., None]
-Ftest = Ftest[..., target_ind][..., None]
-Ival = Ival[..., target_ind][..., None]
-Itrain = Itrain[..., target_ind][..., None]
-Itest = Itest[..., target_ind][..., None]
+        # put these into an array in the shape [samples, lat, lon, variable]
+        if ii == 0:
+            Atrain, Aval, Atest = Atr[..., None], Ava[..., None], Ate[..., None]
+            Ftrain, Fval, Ftest = Ftr[..., None], Fva[..., None], Fte[..., None]
+            Itrain, Ival, Itest = Itr[..., None], Iva[..., None], Ite[..., None]
+            Aeval = Aev[..., None]
+        else:
+            Atrain = np.concatenate([Atrain, Atr[..., None]], axis=-1)
+            Aval = np.concatenate([Aval, Ava[..., None]], axis=-1)
+            Atest = np.concatenate([Atest, Ate[..., None]], axis=-1)
+            Aeval = np.concatenate([Aeval, Aev[..., None]], axis=-1)
+            Ftrain = np.concatenate([Ftrain, Ftr[..., None]], axis=-1)
+            Fval = np.concatenate([Fval, Fva[..., None]], axis=-1)
+            Ftest = np.concatenate([Ftest, Fte[..., None]], axis=-1)
+            Itrain = np.concatenate([Itrain, Itr[..., None]], axis=-1)
+            Ival = np.concatenate([Ival, Iva[..., None]], axis=-1)
+            Itest = np.concatenate([Itest, Ite[..., None]], axis=-1)
+
+        # get the index of the target variable
+        if var == settings["target_variable"]:
+            target_ind = ii
+
+    # use target_ind to get the target variable
+    Ftrain = Ftrain[..., target_ind][..., None]
+    Fval = Fval[..., target_ind][..., None]
+    Ftest = Ftest[..., target_ind][..., None]
+    Ival = Ival[..., target_ind][..., None]
+    Itrain = Itrain[..., target_ind][..., None]
+    Itest = Itest[..., target_ind][..., None]
+
+    # save the preprocessed data             
+    preprocessing.save_npz(settings, Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest)
+
     
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
-# get the evaluation data to predict -- default to predicting for all 10 evaluation members
-evalmems = ['1A', '1B', '1C', '1D', '1E', '1F', '1G', '1H', '1I', '1J',]
-for evalmem in evalmems:
-    ##########################################################
-    # not sure if this will work with multiple input variables
-    ##########################################################
-    Aeval_mem = preprocessing.make_eval_mem(evalmem=evalmem, var=settings["target_variable"], timecut="Tier1")[..., None]
-    if evalmem == '1A':
-         Aeval = Aeval_mem
-    else:
-         Aeval = np.vstack([Aeval, Aeval_mem])
-
 # standardize and select 'internal' or 'forced'
 # first, using the evaluation data
 Doer_eval = DataDoer(Atrain, Aval, Aeval, Ftrain, Fval, Itrain, Ival, settings)
@@ -130,6 +133,7 @@ with open(os.path.join('saved_models', ARGS.exp_name, ARGS.exp_name+str(settings
 Ptrain, Pval, Peval = ved.predict(Xtrain), ved.predict(Xval), ved.predict(Xeval)
 # convert back to unstandardized values
 Ptrain_us, Pval_us, Peval_us = Doer_eval.unstandardize(Ptrain, Pval, Peval)
+
 # if we have a testing split, predict that as well
 if settings["test_members"] is not None and settings["test_models"] is not None:
      Ptest = ved.predict(Xtest)
