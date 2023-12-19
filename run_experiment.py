@@ -38,10 +38,13 @@ tf.random.set_seed(settings["seed"])
 # -------------------------------------------------------------------------------------------
 # pre-process data
 
+# index of target variable
+target_ind = np.where(np.array(settings["input_variable"]) == settings["target_variable"])[0]
+
 # Check to see if the saved data has already been output
 if os.path.isfile(settings['npz_dir'] + settings['exp_name'] + '.npz'):
     # Load the information, if it is already saved
-    Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest = preprocessing.load_npz(settings)
+    Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest, Aeval = preprocessing.load_npz(settings)
 else:
     # for each input variable, save/load processed training/validation/testing? data and split off the target variable
     for ii, var in enumerate(settings["input_variable"]):
@@ -84,10 +87,6 @@ else:
             Ival = np.concatenate([Ival, Iva[..., None]], axis=-1)
             Itest = np.concatenate([Itest, Ite[..., None]], axis=-1)
 
-        # get the index of the target variable
-        if var == settings["target_variable"]:
-            target_ind = ii
-
     # use target_ind to get the target variable
     Ftrain = Ftrain[..., target_ind][..., None]
     Fval = Fval[..., target_ind][..., None]
@@ -97,7 +96,7 @@ else:
     Itest = Itest[..., target_ind][..., None]
 
     # save the preprocessed data             
-    preprocessing.save_npz(settings, Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest)
+    preprocessing.save_npz(settings, Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest, Aeval)
 
     
 # -------------------------------------------------------------------------------------------
@@ -160,8 +159,8 @@ elif settings["target_component"] == 'forced':
 # save the predictions
 os.system('mkdir ' + settings['pred_dir'])
 arr_name = settings['pred_dir'] + ARGS.exp_name+str(settings["seed"]) + "_preds.npz"
-np.savez(arr_name,Ptrain=Ptrain_out,
-                  Pval=Pval_out,
-                  Peval=Peval_out,
-                  Ptest=Ptest_out,
+np.savez(arr_name,Ptrain=Ptrain_out[..., target_ind][..., None],
+                  Pval=Pval_out[..., target_ind][..., None],
+                  Peval=Peval_out[..., target_ind][..., None],
+                  Ptest=Ptest_out[..., target_ind][..., None],
                   )
