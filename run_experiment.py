@@ -146,21 +146,24 @@ else:
 # set the prediction output -- in both cases the forced response
 # either directly, or from full minus internal
 if settings["target_component"] == 'internal':
-    Ptrain_out = Atrain - Ptrain_us
-    Pval_out = Aval - Pval_us
-    Peval_out = Aeval - Peval_us
-    Ptest_out = Atest - Ptest_us
+    Ptrain_out = Atrain[..., target_ind].squeeze() - Ptrain_us.squeeze()
+    Pval_out = Aval[..., target_ind].squeeze() - Pval_us.squeeze()
+    Peval_out = Aeval[..., target_ind].squeeze() - Peval_us.squeeze()
+    Ptest_out = Atest[..., target_ind].squeeze() - Ptest_us.squeeze()
 elif settings["target_component"] == 'forced':
-    Ptrain_out = Ptrain_us
-    Pval_out = Pval_us
-    Peval_out = Peval_us
-    Ptest_out = Ptest_us
+    Ptrain_out = Ptrain_us.squeeze()
+    Pval_out = Pval_us.squeeze()
+    Peval_out = Peval_us.squeeze()
+    Ptest_out = Ptest_us.squeeze()
+
+print(np.shape(Ptrain_out), np.shape(Pval_out), np.shape(Peval_out), np.shape(Ptest_out))
 
 # save the predictions
 os.system('mkdir ' + settings['pred_dir'])
 arr_name = settings['pred_dir'] + ARGS.exp_name+str(settings["seed"]) + "_preds.npz"
-np.savez(arr_name,Ptrain=Ptrain_out[..., target_ind][..., None],
-                  Pval=Pval_out[..., target_ind][..., None],
-                  Peval=Peval_out[..., target_ind][..., None],
-                  Ptest=Ptest_out[..., target_ind][..., None],
-                  )
+np.savez(arr_name,
+         Ptrain=Ptrain_out,
+         Pval=Pval_out,
+         Peval=Peval_out,
+         Ptest=Ptest_out,
+         )
