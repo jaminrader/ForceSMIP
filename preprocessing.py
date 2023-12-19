@@ -86,7 +86,7 @@ def load_model(model, var, timecut="Tier1", ntrainmems=20):
 def make_data(models=["CESM2", "MIROC6", "CanESM5"], var="tos", timecut="Tier1", mems=np.arange(20)):
     """ 
     models: a list of models from     "MIROC6
-                                       "CESM2"
+                                      "CESM2"
                                       "CanESM5"
                                       "MPI-ESM1-2-LR"
                                       "MIROC-ES2L"
@@ -146,18 +146,19 @@ def make_data(models=["CESM2", "MIROC6", "CanESM5"], var="tos", timecut="Tier1",
     return Xfull, Yforced, Yinternal
 
 
-def save_npz(settings, A_train, F_train, I_train, A_val, F_val, I_val, A_test, F_test, I_test):
+def save_npz(settings, A_train, F_train, I_train, A_val, F_val, I_val, A_test, F_test, I_test, A_eval):
     os.system('mkdir ' +  settings['npz_dir'])
     np.savez(settings['npz_dir'] + settings['exp_name'] + '.npz', Atr=A_train, Ftr=F_train, Itr=I_train, 
-             Ava=A_val, Fva=F_val, Iva=I_val, Ate=A_test, Fte=F_test, Ite=I_test)
+             Ava=A_val, Fva=F_val, Iva=I_val, Ate=A_test, Fte=F_test, Ite=I_test, Aev=A_eval)
 
 
 def load_npz(settings):
     npzdat = np.load(settings['npz_dir'] + settings['exp_name'] + '.npz')
-    Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite = (npzdat['Atr'], npzdat['Ftr'], npzdat['Itr'],
-                                                   npzdat['Ava'], npzdat['Fva'], npzdat['Iva'],
-                                                   npzdat['Ate'], npzdat['Fte'], npzdat['Ite'])
-    return Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite
+    Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite, Aev = (npzdat['Atr'], npzdat['Ftr'], npzdat['Itr'],
+                                                        npzdat['Ava'], npzdat['Fva'], npzdat['Iva'],
+                                                        npzdat['Ate'], npzdat['Fte'], npzdat['Ite'],
+                                                        npzdat['Aev'])
+    return Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite, Aev
     
 
 def stack_variable(X_tuple):
