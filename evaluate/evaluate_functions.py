@@ -23,22 +23,23 @@ tmap = matplotlib.colors.LinearSegmentedColormap.from_list('terrain_map_white', 
 #########PLOT###########
 ########################
 
-def Plot2b2_colormesh_o3(data1, data2, data3, lat, lon, min, max):
+def Plot2b2_colormesh_o3(data1, data2, data3, data4, lat, lon, min, max):
     fig, axs = plt.subplots(2, 2)
     # ax=plt.axes(projection= ccrs.PlateCarree())
     data1, lonsr = add_cyclic_point(data1, coord=lon)
     data2, lonsr = add_cyclic_point(data2, coord=lon)
     data3, lonsr = add_cyclic_point(data3, coord=lon)
-    # data4, lonsr = add_cyclic_point(data4, coord=lon)
+    data4, lonsr = add_cyclic_point(data4, coord=lon)
 
     axs[0, 0].pcolormesh(lonsr, lat, data1, cmap = tmap, vmin = min, vmax = max)
     axs[0, 0].set_title('Truth')
     axs[0, 1].pcolormesh(lonsr, lat, data2, cmap = tmap, vmin = min, vmax = max)
     axs[0, 1].set_title('Predicted')
-    cs = axs[1, 0].pcolormesh(lonsr, lat, data3, cmap = tmap, vmin = min, vmax = max)
+    cs = axs[1, 0].pcolormesh(lonsr, lat, data3, cmap = tmap, vmin = -0.1, vmax = 0.1)
     cbar = plt.colorbar(cs,shrink=0.7,orientation='horizontal',label='', format='%.1f')
     axs[1, 0].set_title('Difference')
-    axs[1, 1].remove()
+    axs[1, 1].pcolormesh(lonsr, lat, data4, cmap = tmap, vmin = min, vmax = max)
+    # axs[1, 1].remove()
 
     return(axs[1,0])
 
@@ -66,7 +67,6 @@ def Plot_Gobal_Map(lat, lon, plot_data, title, min, max, colorbar, colorbar_titl
     cbar.set_label(colorbar_title)
     plt.title(title)
     
-    plt.show()
 
 ########################
 #########CALC###########
