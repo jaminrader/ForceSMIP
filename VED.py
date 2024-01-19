@@ -18,6 +18,11 @@ class Sampling(keras.layers.Layer):
         mean, log_var = inputs
         return K.random_normal(tf.shape(log_var)) * K.exp(log_var / 2) + mean
     
+def r_squared_metric(y_true,y_pred):
+
+    ss_res = K.sum(K.square(y_true-y_pred))
+    ss_tot = K.sum(K.square(y_true-K.mean(y_true)))
+    return ( 1 - ss_res/(ss_tot + K.epsilon()) )
 
 def build_encoder(Xtrain, settings):
     # Xtrain has dimensions: [sample x lat x lon x variable]
@@ -84,13 +89,15 @@ def train_VED(Xtrain, Ttrain, Xval, Tval, settings,):
     ved, encoder, decoder = build_VED(Xtrain, Ttrain, settings)
     
     optimizer = tf.keras.optimizers.Adam(learning_rate=settings['learn_rate'])
+
     early_stopping = tf.keras.callbacks.EarlyStopping(
                         monitor='val_loss',
                         patience=settings['patience'], # if loss doesn’t decrease for 50 epochs...
     )
 
-    ved.compile(loss = "mse", optimizer = optimizer, metrics=[tf.keras.metrics.MeanAbsoluteError(),
-                                                             ])
+    metrics=["mse", tf.keras.metrics.MeanAbsoluteError(), r_squared_metric]
+
+    ved.compile(loss = "mse", optimizer = optimizer, metrics=metrics)
     
     ved.fit(Xtrain, Ttrain,
           epochs = settings["max_epochs"],
