@@ -349,4 +349,357 @@ experiments = {
         "activation"     : "tanh",
         "variational_loss": 0.0001
     },
+
+
+    "pr_exp_internal" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 100,
+        "batch_size"    : 64,
+        "max_epochs"    : 2000,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["pr", "tas", "psl", "tos"],
+        "target_variable": "pr",
+        "target_component": "internal", #forced or internal
+        "train_models"  : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "val_models"    : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "test_models"   : ["CESM2", "MIROC6", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "train_members" : np.arange(22),
+        "val_members"   : np.arange(22, 25),
+        "test_members"  : np.arange(25, 30),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+
+    "pr_exp_forced" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 100,
+        "batch_size"    : 64,
+        "max_epochs"    : 2000,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["pr", "tas", "psl", "tos"],
+        "target_variable": "pr",
+        "target_component": "forced", #forced or internal
+        "train_models"  : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "val_models"    : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "test_models"   : ["CESM2", "MIROC6", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "train_members" : np.arange(22),
+        "val_members"   : np.arange(22, 25),
+        "test_members"  : np.arange(25, 30),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+
+    "tos_exp_internal" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 100,
+        "batch_size"    : 64,
+        "max_epochs"    : 2000,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["pr", "tas", "psl", "tos"],
+        "target_variable": "tos",
+        "target_component": "internal", #forced or internal
+        "train_models"  : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "val_models"    : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "test_models"   : ["CESM2", "MIROC6", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "train_members" : np.arange(22),
+        "val_members"   : np.arange(22, 25),
+        "test_members"  : np.arange(25, 30),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+
+    "tos_exp_forced" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 100,
+        "batch_size"    : 64,
+        "max_epochs"    : 2000,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["pr", "tas", "psl", "tos"],
+        "target_variable": "tos",
+        "target_component": "forced", #forced or internal
+        "train_models"  : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "val_models"    : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "test_models"   : ["CESM2", "MIROC6", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "train_members" : np.arange(22),
+        "val_members"   : np.arange(22, 25),
+        "test_members"  : np.arange(25, 30),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+
+    "tos_feature_forced" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 100,
+        "batch_size"    : 64,
+        "max_epochs"    : 2000,
+        "metric"        : "",
+        
+        "input_std_method"    : "feature", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["pr", "tas", "psl", "tos"],
+        "target_variable": "tos",
+        "target_component": "forced", #forced or internal
+        "train_models"  : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "val_models"    : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "test_models"   : ["CESM2", "MIROC6", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "train_members" : np.arange(22),
+        "val_members"   : np.arange(22, 25),
+        "test_members"  : np.arange(25, 30),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+
+    "tos_feature_internal" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.005,
+        "patience"      : 10,
+        "batch_size"    : 64,
+        "max_epochs"    : 2000,
+        "metric"        : "",
+        
+        "input_std_method"    : "feature", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["pr", "tas", "psl", "tos"],
+        "target_variable": "tos",
+        "target_component": "internal", #forced or internal
+        "train_models"  : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "val_models"    : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "test_models"   : ["CESM2", "MIROC6", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "train_members" : np.arange(22),
+        "val_members"   : np.arange(22, 25),
+        "test_members"  : np.arange(25, 30),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 0,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+
+    "psl_exp_internal" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 100,
+        "batch_size"    : 64,
+        "max_epochs"    : 2000,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["pr", "tas", "psl", "tos"],
+        "target_variable": "psl",
+        "target_component": "internal", #forced or internal
+        "train_models"  : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "val_models"    : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "test_models"   : ["CESM2", "MIROC6", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "train_members" : np.arange(22),
+        "val_members"   : np.arange(22, 25),
+        "test_members"  : np.arange(25, 30),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 3,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+
+    "psl_exp_forced" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 100,
+        "batch_size"    : 64,
+        "max_epochs"    : 2000,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["pr", "tas", "psl", "tos"],
+        "target_variable": "psl",
+        "target_component": "forced", #forced or internal
+        "train_models"  : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "val_models"    : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "test_models"   : ["CESM2", "MIROC6", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "train_members" : np.arange(22),
+        "val_members"   : np.arange(22, 25),
+        "test_members"  : np.arange(25, 30),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 3,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+
+    "tas_exp_internal" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 100,
+        "batch_size"    : 64,
+        "max_epochs"    : 2000,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["pr", "tas", "psl", "tos"],
+        "target_variable": "tas",
+        "target_component": "internal", #forced or internal
+        "train_models"  : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "val_models"    : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "test_models"   : ["CESM2", "MIROC6", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "train_members" : np.arange(22),
+        "val_members"   : np.arange(22, 25),
+        "test_members"  : np.arange(25, 30),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+
+    "tas_exp_forced" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 100,
+        "batch_size"    : 64,
+        "max_epochs"    : 2000,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["pr", "tas", "psl", "tos"],
+        "target_variable": "tas",
+        "target_component": "forced", #forced or internal
+        "train_models"  : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "val_models"    : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "test_models"   : ["CESM2", "MIROC6", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "train_members" : np.arange(22),
+        "val_members"   : np.arange(22, 25),
+        "test_members"  : np.arange(25, 30),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+
+    "zmta_exp_forced" : {
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 100,
+        "batch_size"    : 64,
+        "max_epochs"    : 2000,
+        "metric"        : "",
+        
+        "input_std_method"    : "self", #self, feature, overall
+        "output_std_method"   : "feature", # feature, overall
+        "input_variable": ["zmta", "pr", "tas", "psl", "tos"],
+        "target_variable": "zmta",
+        "target_component": "forced", #forced or internal
+        "train_models"  : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "val_models"    : ["CESM2", "MIROC6", "CanESM5", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "test_models"   : ["CESM2", "MIROC6", "MPI-ESM1-2-LR", "MIROC-ES2L",],
+        "train_members" : np.arange(22),
+        "val_members"   : np.arange(22, 25),
+        "test_members"  : np.arange(25, 30),
+        "time_range"    : "Tier1",
+
+        "CNN_blocks"    : [2],
+        "CNN_filters"   : [32],
+        "CNN_kernals"   : [3],
+        "CNN_strides"   : [1],
+
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
 }
