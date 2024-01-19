@@ -46,24 +46,19 @@ class DataDoer():
             self.Atest = (self.Atest_us - np.nanmean(self.Atest_us, axis=Aaxis)[:, None, None, :]) / np.nanstd(self.Atest_us, axis=Aaxis)[:, None, None, :]
         else:
         
-            if self.settings["output_std_method"] == "overall":
+            if self.settings["input_std_method"] == "overall":
                 # standardize the F maps by the training set, across all the data   
                 axis = (0,1,2,)
-            elif self.settings["output_std_method"] == "feature":
+            elif self.settings["input_std_method"] == "feature":
                 # standardize the F maps by the training set, gridpoint-by-gridpoint     
                 axis = (0,)
 
             self.amean = np.nanmean(self.Atrain_us, axis=axis)
-            self.astd  = np.nanstd(self.Atrain_us, axis=axis)
+            self.astd = np.nanstd(self.Atrain_us, axis=axis)
 
-            # Add missing dimensions
-            for i in range(self.Ftrain.ndim - self.fmean.ndim - 1):
-                self.amean = self.fmean[..., None]
-                self.astd = self.fstd[..., None]
-
-                self.Atrain = (self.Atrain_us - self.amean)/self.astd
-                self.Aval = (self.Aval_us - self.amean)/self.astd   
-                self.Atest = (self.Atest_us - self.amean)/self.astd   
+            self.Atrain = (self.Atrain_us - self.amean)/self.astd
+            self.Aval = (self.Aval_us - self.amean)/self.astd
+            self.Atest = (self.Atest_us - self.amean)/self.astd
         
     def select(self):
         self.Xtrain = self.Atrain
