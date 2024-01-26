@@ -168,4 +168,3 @@ for exp_name in experiments.copy():
         experiments[exp_name + '_' + data_name] = experiments[exp_name].copy()
         experiments[exp_name + '_' + data_name]["data_name"] = data_name
         add_data_to_experiment(experiments[exp_name + '_' + data_name], data_name)
-print(experiments)
