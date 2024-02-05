@@ -14,7 +14,6 @@ def get_experiment(exp_name, settings_overwrite=None):
     settings["exp_name"] = exp_name
     settings["npz_dir"] = 'exp_data/'
     settings["pred_dir"] = 'saved_predictions/'
-    settings = add_data_to_experiment(settings)
 
     return settings
 
@@ -29,7 +28,9 @@ data_dictionary = {
     #     "val_members"   : np.arange(18, 25), # Ensemble members for validation
     #     "test_members"  : np.arange(25), # Ensemble members for testing
     #     "time_range" : "Tier1", # ForceSMIP Tier
+    #     "evaluate" : True or False # Whether or not there is a 
     # },
+
     "Train4_Val4_CESM2_tos_tos":{
         "input_variable": ["tos",],
         "target_variable": "tos",
@@ -40,6 +41,8 @@ data_dictionary = {
         "val_members"   : np.arange(18, 25),
         "test_members"  : np.arange(25),
         "time_range" : "Tier1",
+        "evaluate": False,
+        "month": "annual",
     },
 
     "Train4_Val4_MIROC6_tos_tos":{
@@ -52,6 +55,8 @@ data_dictionary = {
         "val_members"   : np.arange(18, 25),
         "test_members"  : np.arange(25),
         "time_range" : "Tier1",
+        "evaluate": False,
+        "month": "annual",
     },
 
     "Train4_Val4_CanESM5_tos_tos":{
@@ -64,6 +69,8 @@ data_dictionary = {
         "val_members"   : np.arange(18, 25),
         "test_members"  : np.arange(25),
         "time_range" : "Tier1",
+        "evaluate": False,
+        "month": "annual",
     },
 
     "Train4_Val4_MPI-ESM1-2-LR_tos_tos":{
@@ -76,6 +83,8 @@ data_dictionary = {
         "val_members"   : np.arange(18, 25),
         "test_members"  : np.arange(25),
         "time_range" : "Tier1",
+        "evaluate": False,
+        "month": "annual",
     },
 
     "Train4_Val4_MIROC-ES2L_tos_tos":{
@@ -88,6 +97,22 @@ data_dictionary = {
         "val_members"   : np.arange(18, 25),
         "test_members"  : np.arange(25),
         "time_range" : "Tier1",
+        "evaluate": False,
+        "month": "annual",
+    },
+
+    "JAN_Train4_Val4_MIROC-ES2L_tos_tos":{
+        "input_variable": ["tos",],
+        "target_variable": "tos",
+        "train_models"  : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR",],
+        "val_models"    : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR",],
+        "test_models"   : None,
+        "train_members" : np.arange(18),
+        "val_members"   : np.arange(18, 25),
+        "test_members"  : None,
+        "time_range" : "Tier1",
+        "evaluate": '1A',
+        "month": 1, #january
     },
 }
 
@@ -122,8 +147,7 @@ experiments = {
 
         # Standardization + prediction component
         "target_component": "internal",
-        "input_std_method"    : "feature",
-        "output_std_method"   : "feature",
+        'save_predictions': True,
 
         # Network specs
         "seed"          : 0 ,
@@ -143,8 +167,7 @@ experiments = {
 
         # Standardization + prediction component
         "target_component": "forced",
-        "input_std_method"    : "feature",
-        "output_std_method"   : "feature",
+        'save_predictions': False,
 
         # Network specs
         "seed"          : 0 ,
@@ -156,6 +179,26 @@ experiments = {
         # Architecture specs
         "encoding_nodes" : [10,10,],
         "code_nodes"     : 3,
+        "activation"     : "tanh",
+        "variational_loss": 0.0001
+    },
+
+    "test" : {
+
+        # Standardization + prediction component
+        "target_component": "internal",
+        'save_predictions': False,
+
+        # Network specs
+        "seed"          : 0 ,
+        "learn_rate" : 0.001,
+        "patience"      : 100,
+        "batch_size"    : 64,
+        "max_epochs"    : 15,
+        
+        # Architecture specs
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 100,
         "activation"     : "tanh",
         "variational_loss": 0.0001
     },

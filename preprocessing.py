@@ -50,7 +50,7 @@ nlat = 72
 nlon = 144
 
 
-def load_model(model, var, timecut="Tier1", ntrainmems=20):
+def load_model(model, var, timecut="Tier1", ntrainmems=20, month="annual"):
     print(root_dir, cmipTable[var], var, model)
     # get the list of all files (members) for this model and variable
     filelist = root_dir + "Training/" + cmipTable[var] + "/" + var + "/" + model + "/" + var + "*.nc"
@@ -72,7 +72,11 @@ def load_model(model, var, timecut="Tier1", ntrainmems=20):
         #########################################################################
         # currently always using yearly data
         #########################################################################
-        varcut = varcut.groupby('time.year').mean()  
+        if month == 'annual':
+            varcut = varcut.groupby('time.year').mean()  
+        else:
+            month_idxs=varcut.groupby('time.month').groups[month]
+            varcut=varcut.isel(time=month_idxs)
         # add coordinate for concatenating after the loop
         varcut = varcut.assign_coords({"variant":ifile+1})
         # append into a list
@@ -83,7 +87,7 @@ def load_model(model, var, timecut="Tier1", ntrainmems=20):
     return all_ens
 
 
-def make_data(models=["CESM2", "MIROC6", "CanESM5"], var="tos", timecut="Tier1", mems=np.arange(20)):
+def make_data(models=["CESM2", "MIROC6", "CanESM5"], var="tos", timecut="Tier1", mems=np.arange(20), month="annual"):
     """ 
     models: a list of models from     "MIROC6
                                       "CESM2"
@@ -120,7 +124,7 @@ def make_data(models=["CESM2", "MIROC6", "CanESM5"], var="tos", timecut="Tier1",
         # load the members for this model/variable into an xarray
         # returns the correct time period given the tier
         # note it loads all members, so the forced response is correct, then picks members based on mems
-        da = load_model(model, var, timecut, nfullmems)
+        da = load_model(model, var, timecut, nfullmems, month=month)
         # convert from xarray to a numpy array: dimensions are [members, time, lat, lon]
         da_np = np.asarray(da)
         # get the forced response as the ensemble mean across all members (0th dimension)
@@ -146,19 +150,23 @@ def make_data(models=["CESM2", "MIROC6", "CanESM5"], var="tos", timecut="Tier1",
     return Xfull, Yforced, Yinternal
 
 
-def save_npz(settings, A_train, F_train, I_train, A_val, F_val, I_val, A_test, F_test, I_test, A_eval):
+# def save_npz(settings, A_train, F_train, I_train, A_val, F_val, I_val, A_test, F_test, I_test, A_eval):
+#     os.system('mkdir ' +  settings['npz_dir'])
+#     np.savez(settings['npz_dir'] + settings['data_name'] + '.npz', Atr=A_train, Ftr=F_train, Itr=I_train, 
+#              Ava=A_val, Fva=F_val, Iva=I_val, Ate=A_test, Fte=F_test, Ite=I_test, Aev=A_eval)
+    
+def save_npz(settings, A_train, F_train, I_train, A_val, F_val, I_val, A_test, F_test, I_test):
     os.system('mkdir ' +  settings['npz_dir'])
-    np.savez(settings['npz_dir'] + settings['exp_name'] + '.npz', Atr=A_train, Ftr=F_train, Itr=I_train, 
-             Ava=A_val, Fva=F_val, Iva=I_val, Ate=A_test, Fte=F_test, Ite=I_test, Aev=A_eval)
+    np.savez(settings['npz_dir'] + settings['data_name'] + '.npz', Atr=A_train, Ftr=F_train, Itr=I_train, 
+             Ava=A_val, Fva=F_val, Iva=I_val, Ate=A_test, Fte=F_test, Ite=I_test)
 
 
 def load_npz(settings):
-    npzdat = np.load(settings['npz_dir'] + settings['exp_name'] + '.npz')
-    Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite, Aev = (npzdat['Atr'], npzdat['Ftr'], npzdat['Itr'],
+    npzdat = np.load(settings['npz_dir'] + settings['data_name'] + '.npz')
+    Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite = (npzdat['Atr'], npzdat['Ftr'], npzdat['Itr'],
                                                         npzdat['Ava'], npzdat['Fva'], npzdat['Iva'],
-                                                        npzdat['Ate'], npzdat['Fte'], npzdat['Ite'],
-                                                        npzdat['Aev'])
-    return Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite, Aev
+                                                        npzdat['Ate'], npzdat['Fte'], npzdat['Ite'],)
+    return Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite
     
 
 def stack_variable(X_tuple):
@@ -192,29 +200,3 @@ def make_eval_mem_monthly(evalmem="1H", var="tos", timecut="Tier1"):
     return np.asarray(varin)
 
 
-# def make_X_data(models=["CESM2","MIROC6","CanESM5"], var="tos", timecut="Tier1", nmems=20):
-#     nmodels = len(models)
-
-#     timebds = evalPeriods[timecut]
-#     time1 = int(timebds[0][:4])
-#     time2 = int(timebds[1][:4])
-
-#     ntime = time2 - time1 + 1
-
-#     X = np.empty((ntime*nmems*nmodels, nlat, nlon)) + np.nan
-
-#     for imod, model in enumerate(models):
-
-#         da = load_model(model, var, timecut, nmems)
-#         da_np = np.asarray(da)
-#         Xloop = np.empty((nmems*ntime, nlat, nlon)) + np.nan
-
-#         for imem in range(nmems):
-#             Xloop[imem*ntime:(imem+1)*ntime, :, :] = da_np[imem, :, :, :]
-
-#         X[nmems*ntime*imod:nmems*ntime*(imod+1), :, :] = Xloop
-
-#     Xbad = np.mean(X, axis=0)
-#     X[:, np.isnan(Xbad)] = 0
-    
-#     return X

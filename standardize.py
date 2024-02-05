@@ -95,4 +95,113 @@ class DataDoer():
         self.select()
         self.remove_nans()
         return self.Xtrain, self.Xval, self.Xtest, self.Ttrain, self.Tval
-        
+
+def standardize(D, Dmean, Dstd):
+    return np.nan_to_num((D - Dmean) / Dstd)
+
+def self_standardize(D, climo=None, mean_only=False):
+    Dmean = np.nanmean(D, axis=(1,2,3))[:, None, None, None]
+    if mean_only:
+        Dstd = 1
+    else:
+        Dstd = np.nanstd(D, axis=(1,2,3))[:, None, None, None]
+    if climo is  None:
+        return np.nan_to_num((D - Dmean) / Dstd)
+    else:
+        return np.nan_to_num((D - Dmean) / Dstd) - climo
+
+def unstandardize(D, Dmean, Dstd):
+    return D * Dstd + Dmean
+
+def unstandardize_predictions(Atr_stand, Ava_stand, Ate_stand,
+                              Ptr_stand, Pva_stand, Pte_stand,
+                              fmean, fstd, imean, istd,
+                              settings):
+    
+    if settings['target_component'] == 'forced':
+        PItr_stand = Atr_stand - Ptr_stand
+        PIva_stand = Ava_stand - Pva_stand
+        PIte_stand = Ate_stand - Pte_stand
+
+        PFtr_stand = Ptr_stand
+        PFva_stand = Pva_stand
+        PFte_stand = Pte_stand
+
+    if settings['target_component'] == 'internal':
+        PFtr_stand = Atr_stand - Ptr_stand
+        PFva_stand = Ava_stand - Pva_stand
+        PFte_stand = Ate_stand - Pte_stand
+
+        PItr_stand = Ptr_stand
+        PIva_stand = Pva_stand
+        PIte_stand = Pte_stand
+
+    PFtr = unstandardize(PFtr_stand, fmean, fstd)
+    PFva = unstandardize(PFva_stand, fmean, fstd)
+    PFte = unstandardize(PFte_stand, fmean, fstd)
+
+    PItr = unstandardize(PItr_stand, imean, istd)
+    PIva = unstandardize(PIva_stand, imean, istd)
+    PIte = unstandardize(PIte_stand, imean, istd)
+
+    return PFtr, PFva, PFte, \
+           PItr, PIva, PIte, \
+           PFtr_stand, PFva_stand, PFte_stand, \
+           PItr_stand, PIva_stand, PIte_stand
+
+def standardize_all_data(Atr, Ava, Ate,
+                    Ftr, Fva, Fte,
+                    Itr, Iva, Ite,
+                    settings):
+    mean_only = True
+    # Standardize the inputs
+    Xclimo = self_standardize(Ate, mean_only=mean_only).mean(axis=0)[None, ...]
+    Xtr_stand = self_standardize(self_standardize(Atr, climo=Xclimo, mean_only=mean_only))
+    Xva_stand = self_standardize(self_standardize(Ava, climo=Xclimo, mean_only=mean_only))
+    Xte_stand = self_standardize(self_standardize(Ate, climo=Xclimo, mean_only=mean_only))
+
+    # Standardize the outputs
+    amean = Atr.mean(axis=(0))
+    astd = Atr.std(axis=(0))
+
+    Atr_stand = standardize(Atr, amean, astd)
+    Ava_stand = standardize(Ava, amean, astd)
+    Ate_stand = standardize(Ate, amean, astd)
+
+    imean = Itr.mean(axis=(0))
+    istd = Itr.std(axis=(0))
+
+    Itr_stand = standardize(Itr, imean, istd)
+    Iva_stand = standardize(Iva, imean, istd)
+
+    fmean = Ftr.mean(axis=(0))
+    fstd = Ftr.std(axis=(0))
+
+    Ftr_stand = standardize(Ftr, fmean, fstd)
+    Fva_stand = standardize(Fva, fmean, fstd)
+    
+    if settings['evaluate']:
+        Ite_stand = np.full_like(Ate_stand, np.nan)
+        Fte_stand = np.full_like(Ate_stand, np.nan)
+    else:
+        Ite_stand = standardize(Ite, imean, istd)
+        Fte_stand = standardize(Fte, fmean, fstd)
+
+    if settings['target_component'] == 'internal':
+        Ttr_stand = Itr_stand
+        Tva_stand = Iva_stand
+        Tte_stand = Ite_stand
+    elif settings['target_component'] == 'forced':
+        Ttr_stand = Ftr_stand
+        Tva_stand = Fva_stand
+        Tte_stand = Fte_stand
+
+    return  Xtr_stand, Xva_stand, Xte_stand, \
+            Atr_stand, Ava_stand, Ate_stand, \
+            Itr_stand, Iva_stand, Ite_stand, \
+            Ftr_stand, Fva_stand, Fte_stand, \
+            Ttr_stand, Tva_stand, Tte_stand, \
+            amean, astd, imean, istd, fmean, fstd
+
+
+
