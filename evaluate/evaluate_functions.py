@@ -24,6 +24,17 @@ tmap = matplotlib.colors.LinearSegmentedColormap.from_list('terrain_map_white', 
 ########################
 
 def Plot2b2_colormesh_o3(data1, data2, data3, data4, lat, lon, min, max):
+    if min == None:
+        minT = np.min([data1, data2, data4])
+        maxT = np.max([data1, data2, data4])
+        max = np.max(np.abs([minT, maxT]))
+        min = -max
+
+    minT = np.min([data3])
+    maxT = np.max([data3])
+    max2 = np.max(np.abs([minT, maxT]))
+    min2 = -max2
+
     fig, axs = plt.subplots(2, 2)
     # ax=plt.axes(projection= ccrs.PlateCarree())
     data1, lonsr = add_cyclic_point(data1, coord=lon)
@@ -32,14 +43,18 @@ def Plot2b2_colormesh_o3(data1, data2, data3, data4, lat, lon, min, max):
     data4, lonsr = add_cyclic_point(data4, coord=lon)
 
     axs[0, 0].pcolormesh(lonsr, lat, data1, cmap = tmap, vmin = min, vmax = max)
-    axs[0, 0].set_title('Truth')
+    axs[0, 0].set_title('a) Truth')
     axs[0, 1].pcolormesh(lonsr, lat, data2, cmap = tmap, vmin = min, vmax = max)
-    axs[0, 1].set_title('Predicted')
-    cs = axs[1, 0].pcolormesh(lonsr, lat, data3, cmap = tmap, vmin = -0.1, vmax = 0.1)
+    axs[0, 1].set_title('b) Predicted')
+    cs = axs[1, 0].pcolormesh(lonsr, lat, data3, cmap = tmap, vmin = min2, vmax = max2)
     cbar = plt.colorbar(cs,shrink=0.7,orientation='horizontal',label='', format='%.1f')
-    axs[1, 0].set_title('Difference')
-    axs[1, 1].pcolormesh(lonsr, lat, data4, cmap = tmap, vmin = min, vmax = max)
+    axs[1, 0].set_title('c) Difference (a - b)')
+    cs1 = axs[1, 1].pcolormesh(lonsr, lat, data4, cmap = tmap, vmin = min, vmax = max)
+    cbar = plt.colorbar(cs1,shrink=0.7,orientation='horizontal',label='', format='%.1f')
+    axs[1, 1].set_title('d) Full Trend \n (forced and internal variability)')
     # axs[1, 1].remove()
+
+    fig.tight_layout() 
 
     return(axs[1,0])
 
@@ -83,7 +98,7 @@ def nandot(X,Y):
             C[row,col] = np.nanmean(np.multiply(X[row,:],Y[:,col]))
     return C   
 
-def CalcSAMIndex(lat, lon, data):
+def CalcSAMIndex(lat, lon, data, eigenvector):
     print("Calculating SAM index")
     print("Not finished; need to test with SLP model")
     climatology = data.groupby("time.month").mean("time")
@@ -99,35 +114,18 @@ def CalcSAMIndex(lat, lon, data):
     dataf = data.reshape(len(data[:,0,0]), len(data[0,:,0]) * len(data[0,0,:]))  
     
     #Calculate EOF
-    C = nandot(dataf, np.transpose(dataf))   
-    lam, Z = LA.eig(C)
-    Z = (Z - np.nanmean(Z,axis=0))/np.nanstd(Z,axis=0)
-    E = np.dot(Z.T,dataf)
-    
-    print(np.shape(Z))
-    print(np.shape(E))
-    
-    # D = nandot(Z[:,:10].T,data_temp.reshape(data.shape[0],data_temp.shape[1]*data_temp.shape[2]))
-    # xplot = D.reshape(D.shape[0],len(data[0,:,0]),len(data[0,0,:]))[0,:,:]
+    if eigenvector:
+        print('Using given eigenvector')
+        Z = np.dot(dataf,eigenvector)
+        return(Z[:,0], None)
+    else:
+        print("calculating eigenvector")
+        C = 1./np.size(dataf,axis = 0)*(np.dot(np.transpose(dataf),dataf))
+        lam, E = LA.eig(C) #eigenvalues eigenvectors
+        Z = np.dot(dataf,E)
+        print(np.shape(Z))
+        return(Z[:,0], E)
 
-    # plt.title("before fix")    
-    # cs = plt.contourf(lon, lat, xplot, cmap = tmap)#, levels = np.linspace(-15, 15, 20))
-    # plt.plot(52, -80 , 'o', color = 'red')
-    # plt.plot(52, -40, 'o', color = 'blue')
-    # plt.colorbar(cs)
-    # plt.show()
-    
-    # #This checks that negative EOFs represent the negative phase of the SAM
-    # if xplot[50, -80] <= 0 and xplot[20, -40] >=0:
-    #     print("fix")
-    #     Z = Z * -1
-    #     xplot = xplot * -1
-         
-    # cs = plt.contourf(lon, lat_region, xplot, cmap = tmap, levels = np.linspace(-15, 15, 20))
-    # plt.colorbar(cs)
-    # plt.show()
-
-    return(Z[:,0])
 
 def CalcNAOIndex(lat, lon, data):
     print("Calculating NAO index")
