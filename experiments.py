@@ -14,6 +14,8 @@ def get_experiment(exp_name, settings_overwrite=None):
     settings["exp_name"] = exp_name
     settings["npz_dir"] = 'exp_data/'
     settings["pred_dir"] = 'saved_predictions/'
+    settings["exp_specs_dir"] = 'exp_results/'
+    settings["tune_specs_dir"] = 'tuning_results/'
 
     return settings
 
@@ -32,11 +34,11 @@ data_dictionary = {
     # },
 
     "Train4_Val4_CESM2_tos_tos":{
-        "input_variable": ["tos",],
+        "input_variable": ("tos",),
         "target_variable": "tos",
-        "train_models"  : ["MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
-        "val_models"    : ["MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
-        "test_models"   : ["CESM2",],
+        "train_models"  : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "val_models"    : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "test_models"   : ("CESM2",),
         "train_members" : np.arange(18),
         "val_members"   : np.arange(18, 25),
         "test_members"  : np.arange(25),
@@ -46,11 +48,11 @@ data_dictionary = {
     },
 
     "Train4_Val4_MIROC6_tos_tos":{
-        "input_variable": ["tos",],
+        "input_variable": ("tos",),
         "target_variable": "tos",
-        "train_models"  : ["CESM2","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
-        "val_models"    : ["CESM2","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",],
-        "test_models"   : ["MIROC6",],
+        "train_models"  : ("CESM2","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "val_models"    : ("CESM2","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "test_models"   : ("MIROC6",),
         "train_members" : np.arange(18),
         "val_members"   : np.arange(18, 25),
         "test_members"  : np.arange(25),
@@ -60,11 +62,11 @@ data_dictionary = {
     },
 
     "Train4_Val4_CanESM5_tos_tos":{
-        "input_variable": ["tos",],
+        "input_variable": ("tos",),
         "target_variable": "tos",
-        "train_models"  : ["CESM2","MIROC6","MPI-ESM1-2-LR","MIROC-ES2L",],
-        "val_models"    : ["CESM2","MIROC6","MPI-ESM1-2-LR","MIROC-ES2L",],
-        "test_models"   : ["CanESM5",],
+        "train_models"  : ("CESM2","MIROC6","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "val_models"    : ("CESM2","MIROC6","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "test_models"   : ("CanESM5",),
         "train_members" : np.arange(18),
         "val_members"   : np.arange(18, 25),
         "test_members"  : np.arange(25),
@@ -74,11 +76,11 @@ data_dictionary = {
     },
 
     "Train4_Val4_MPI-ESM1-2-LR_tos_tos":{
-        "input_variable": ["tos",],
+        "input_variable": ("tos",),
         "target_variable": "tos",
-        "train_models"  : ["CESM2","MIROC6","CanESM5","MIROC-ES2L",],
-        "val_models"    : ["CESM2","MIROC6","CanESM5","MIROC-ES2L",],
-        "test_models"   : ["MPI-ESM1-2-LR",],
+        "train_models"  : ("CESM2","MIROC6","CanESM5","MIROC-ES2L",),
+        "val_models"    : ("CESM2","MIROC6","CanESM5","MIROC-ES2L",),
+        "test_models"   : ("MPI-ESM1-2-LR",),
         "train_members" : np.arange(18),
         "val_members"   : np.arange(18, 25),
         "test_members"  : np.arange(25),
@@ -88,11 +90,11 @@ data_dictionary = {
     },
 
     "Train4_Val4_MIROC-ES2L_tos_tos":{
-        "input_variable": ["tos",],
+        "input_variable": ("tos",),
         "target_variable": "tos",
-        "train_models"  : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR",],
-        "val_models"    : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR",],
-        "test_models"   : ["MIROC-ES2L",],
+        "train_models"  : ("CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR",),
+        "val_models"    : ("CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR",),
+        "test_models"   : ("MIROC-ES2L",),
         "train_members" : np.arange(18),
         "val_members"   : np.arange(18, 25),
         "test_members"  : np.arange(25),
@@ -102,10 +104,10 @@ data_dictionary = {
     },
 
     "JAN_Train4_Val4_MIROC-ES2L_tos_tos":{
-        "input_variable": ["tos",],
+        "input_variable": ("tos",),
         "target_variable": "tos",
-        "train_models"  : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR",],
-        "val_models"    : ["CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR",],
+        "train_models"  : ("CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR",),
+        "val_models"    : ("CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR",),
         "test_models"   : None,
         "train_members" : np.arange(18),
         "val_members"   : np.arange(18, 25),
@@ -197,8 +199,8 @@ experiments = {
         "max_epochs"    : 15,
         
         # Architecture specs
-        "encoding_nodes" : [100,100,],
-        "code_nodes"     : 100,
+        "encoding_nodes" : [1000,1000,],
+        "code_nodes"     : 1000,
         "activation"     : "tanh",
         "variational_loss": 0.0001
     },
