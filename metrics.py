@@ -30,5 +30,5 @@ def R2(Dtrue, Dpred, weights=1):
         weights = 1
     eps = np.finfo(float).eps
     ss_res = np.nansum(np.square(Dtrue-Dpred)*weights) # sum of squares of the residual
-    ss_tot = np.nansum(np.square(Dtrue-np.mean(Dtrue))*weights) # total sum of squares
+    ss_tot = np.nansum(np.square(Dtrue-np.nanmean(Dtrue))*weights) # total sum of squares
     return ( 1 - ss_res/(ss_tot + eps) )
