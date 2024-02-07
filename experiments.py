@@ -189,11 +189,11 @@ experiments = {
 
         # Standardization + prediction component
         "target_component": "internal",
-        'save_predictions': False,
+        'save_predictions': True,
 
         # Network specs
         "seed"          : 0 ,
-        "learn_rate" : 0.001,
+        "learn_rate" : 0.0001,
         "patience"      : 100,
         "batch_size"    : 64,
         "max_epochs"    : 15,
