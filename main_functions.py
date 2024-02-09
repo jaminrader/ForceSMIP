@@ -64,11 +64,11 @@ def preprocess(settings):
 
     return Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest 
 
-def prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest , settings):
+def prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest, settings):
     Aall = np.concatenate([Atrain, Aval, Atest])
-    nanbool = np.isnan(Aall).any(axis=0)
+    nanbool = np.isnan(Aall).any(axis=(0, -1))
     for D in [Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest,]:
-        D[:, nanbool] = np.nan
+        D[:, nanbool, :] = np.nan
 
     # standardize the maps to prepare for training
     return standardize_all_data(Atrain, Aval, Atest, 
@@ -79,7 +79,7 @@ def prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftes
 def train_and_predict(Xtrain_stand, Ttrain_stand, Xval_stand, Tval_stand, Xtest_stand, Ttest_stand,
                       Atrain_stand, Aval_stand, Atest_stand, 
                       Ftrain, Fval, Ftest, Itrain, Ival, Itest, 
-                      fmean, fstd, imean, istd,
+                      amean, astd, fmean, fstd, imean, istd,
                       ARGS, settings):
     ved, encoder, decoder = VED.train_VED(Xtrain_stand, Ttrain_stand, Xval_stand, Tval_stand, settings)
     # save trained model
@@ -100,11 +100,9 @@ def train_and_predict(Xtrain_stand, Ttrain_stand, Xval_stand, Tval_stand, Xtest_
     # convert back to unstandardized values , note: PF refers to the predicted forced response, 
     # and PI to the predicted internal variablility
     PFtrain, PFval, PFtest, \
-    PItrain, PIval, PItest, \
-    PFtrain_stand, PFval_stand, PFtest_stand, \
-    PItrain_stand, PIval_stand, PItest_stand = unstandardize_predictions(Atrain_stand, Aval_stand, Atest_stand,
+    PItrain, PIval, PItest = unstandardize_predictions(Atrain_stand, Aval_stand, Atest_stand,
                                                                     Ptrain_stand, Pval_stand, Ptest_stand,
-                                                                    fmean, fstd, imean, istd,
+                                                                    amean, astd, fmean, fstd, imean, istd,
                                                                     settings)
 
     if settings['save_predictions']:
