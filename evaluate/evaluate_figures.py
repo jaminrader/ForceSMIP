@@ -18,8 +18,8 @@ sys.path.insert(1, "/barnes-scratch/mafern/ForceSMIP/ForceSMIP/")
 import experiments as exp
 
 
-data_name = "Train4_Val4_CESM2_tos_tos"
-model_name = "test"
+data_name = "Train4_Val4_CESM2_all_pr"
+model_name = "internal_feature"
 
 complete_name = model_name + "_" + data_name
 settings = exp.get_experiment(model_name)
@@ -104,6 +104,8 @@ time_n = np.size(time)
 Truth = Ftest.squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
 Prediction = PFtest.reshape(n_test_members, time_n, lat_n, lon_n)
 Full = (Itest+Ftest).squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
+PItest = (PItest).squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
+Itest = (Itest).squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
 
 Prediction = xr.DataArray(Prediction, dims = ['members','time','lat','lon'])
 Prediction["members"] = np.arange(n_test_members)
@@ -123,7 +125,55 @@ Full["time"] = time
 Full["lat"] = lat[:]
 Full["lon"] = lon[:]
 
+PItest = xr.DataArray(PItest, dims = ['members','time','lat','lon'])
+PItest["members"] = np.arange(n_test_members)
+PItest["time"] = time
+PItest["lat"] = lat[:]
+PItest["lon"] = lon[:]
+
+Itest = xr.DataArray(Itest, dims = ['members','time','lat','lon'])
+Itest["members"] = np.arange(n_test_members)
+Itest["time"] = time
+Itest["lat"] = lat[:]
+Itest["lon"] = lon[:]
 #######################################
+
+GLOBALMEAN_TIMESERIES = True
+if GLOBALMEAN_TIMESERIES:
+    Truth_GM = ef.CalcGlobalMean(Itest[0,:,:,:], lat)
+    Prediction_GM = ef.CalcGlobalMean(PItest[0,:,:,:], lat) 
+
+    plt.figure()
+    plt.plot(Truth_GM, color = "black", label = "truth")
+    plt.plot(Prediction_GM, color = "red", label = "prediction")
+    plt.legend()
+    plt.title("Internal Variability")
+    plt.savefig(savepath + "I_Global_TimesSeries_" + savefig_name)
+
+    Truth_GM = ef.CalcGlobalMean(Truth[0,:,:,:], lat)
+    Prediction_GM = ef.CalcGlobalMean((Full[0,:,:,:] - PItest[0,:,:,:]), lat) 
+
+    plt.figure()
+    plt.plot(Truth_GM, color = "black", label = "truth")
+    plt.plot(Prediction_GM, color = "red", label = "Full - P IV")
+    plt.legend()
+    plt.title("Predicted Forced Response")
+    plt.savefig(savepath + "FP_Global_TimesSeries_" + savefig_name)
+
+    Truth_GM = ef.CalcGlobalMean(Truth[0,:,:,:], lat)
+    Prediction_GM = ef.CalcGlobalMean(Prediction[0,:,:,:], lat) 
+    Full_GM = ef.CalcGlobalMean(Full[0,:,:,:], lat)
+
+    plt.figure()
+    plt.plot(Truth_GM, color = "black", label = "truth")
+    plt.plot(Prediction_GM, color = "red", label = "prediction")
+    plt.plot(Full_GM, color = "green", label = "full")
+    plt.legend()
+    plt.title("Forced Response")
+    plt.savefig(savepath + "F_Global_TimesSeries_" + savefig_name)
+
+    #############
+
 if EVALUATE_SAM:
     for member in range(n_test_members):
         Pred = Prediction[member]
