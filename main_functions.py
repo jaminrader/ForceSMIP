@@ -64,11 +64,18 @@ def preprocess(settings):
 
     return Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest 
 
-def prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest , settings):
+def prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest, settings):
+    target_ind = np.where(np.array(settings["input_variable"]) == settings["target_variable"])[0][0]
     Aall = np.concatenate([Atrain, Aval, Atest])
-    nanbool = np.isnan(Aall).any(axis=0)
-    for D in [Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest,]:
-        D[:, nanbool] = np.nan
+    Ananbool = np.isnan(Aall).any(axis=(0))
+    # for D in [Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest,]:
+    #     D[:, nanbool] = np.nan
+    for D in [Atrain, Aval, Atest,]:
+        D[:, Ananbool] = np.nan
+
+    Tnanbool = np.isnan(Aall[..., target_ind:target_ind+1]).any(axis=(0))
+    for D in [Ftrain, Itrain, Fval, Ival, Ftest, Itest,]:
+        D[:, Tnanbool] = np.nan
 
     # standardize the maps to prepare for training
     return standardize_all_data(Atrain, Aval, Atest, 
@@ -176,9 +183,6 @@ def make_json_friendly(specs_orig):
                 specs[key] = str(specs[key])
             if type(specs[key]) == np.int64:
                 specs[key] = int(specs[key])
-            # if key == 'results':
-            #     for reskey in specs[key]:
-            #         specs[key][reskey]
     return specs
 
 def save_experiment_specs(exp_name, specs_dict, directory):
