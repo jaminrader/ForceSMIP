@@ -48,7 +48,7 @@ Xtrain_stand, Xval_stand, Xtest_stand, \
 PFtrain, PFval, PFtest, PItrain, PIval, PItest = train_and_predict(Xtrain_stand, Ttrain_stand, Xval_stand, Tval_stand, Xtest_stand, Ttest_stand,
                                                                     Atrain_stand, Aval_stand, Atest_stand, 
                                                                     Ftrain, Fval, Ftest, Itrain, Ival, Itest, 
-                                                                    fmean, fstd, imean, istd,
+                                                                    amean, astd, fmean, fstd, imean, istd,
                                                                     ARGS, settings)
 
 # -------------------------------------------------------------------------------------------

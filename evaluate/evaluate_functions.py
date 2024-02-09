@@ -86,6 +86,14 @@ def Plot_Gobal_Map(lat, lon, plot_data, title, min, max, colorbar, colorbar_titl
 ########################
 #########CALC###########
 ########################
+def CalcGlobalMean(data, lat):
+    weights = np.cos(np.deg2rad(data.lat))
+    weights.name = "weights"
+    
+    data_weighted = data.weighted(weights)
+    weighted_mean = data_weighted.mean(("lon", "lat"))
+    return(weighted_mean)
+
 def CalcPatternCorrelation(y_true, y_pred):  
     ss_res = np.sum(np.square(y_true-y_pred))
     ss_tot = np.sum(np.square(y_true-np.mean(y_true)))
