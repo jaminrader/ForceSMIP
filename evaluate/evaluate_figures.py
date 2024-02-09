@@ -13,25 +13,34 @@ from keras.models import load_model
 import numpy.linalg as LA
 import evaluate_functions as ef
 import pandas as pd
-import argparse
-
 import sys
 sys.path.insert(1, "/barnes-scratch/mafern/ForceSMIP/ForceSMIP/")
 import experiments as exp
 
+
 data_name = "Train4_Val4_CESM2_tos_tos"
-model_name = "internal_feature"
+model_name = "test"
+
 complete_name = model_name + "_" + data_name
 settings = exp.get_experiment(model_name)
+data_settings = exp.data_dictionary[data_name]
+# datapath = "/barnes-scratch/mafern/ForceSMIP/ForceSMIP/exp_data/"
+# predpath = "/barnes-scratch/mafern/ForceSMIP/ForceSMIP/saved_predictions/"
+# savepath = "../barnes-scratch/mafern/ForceSMIP/ForceSMIP/evaluate/figures/"
+datapath = os.path.abspath("exp_data")+'/'
+predpath = os.path.abspath("saved_predictions")+'/'
+savepath = os.path.abspath("evaluate/figures")+'/'
+savefig_name = data_settings['target_variable'] + '_' + settings['target_component']
 
-filename = 'internal_linear_tos_multivar.npz'
-datapath = "/barnes-scratch/mafern/ForceSMIP/ForceSMIP/exp_data/"
-predpath = "/barnes-scratch/mafern/ForceSMIP/ForceSMIP/saved_predictions/"
-savepath = "../barnes-scratch/mafern/ForceSMIP/ForceSMIP/evaluate/figures/"
-savefig_name = "tos_internal"
+VARIABLE = data_settings['target_variable']
+TIER = data_settings['time_range']
+evalPeriods = {
+    "Tier1": ("1950-01-01", "2022-12-31"),
+    "Tier2": ("1900-01-01", "2022-12-31"),
+    "Tier3": ("1979-01-01", "2022-12-31")
+}
+time_range = evalPeriods[TIER]
 
-VARIABLE = "psl"
-TIER = 1
 
 sample_n = 1 #used for functions that plot a single sample
 PLOT_PRED_EXAMPLE = True
@@ -64,67 +73,57 @@ white = plt.cm.RdBu_r(np.ones(2)*0.5)
 upper = plt.cm.RdBu_r(np.linspace(0.51, 1, 49))
 colors = np.vstack((lower, white, upper))
 tmap = matplotlib.colors.LinearSegmentedColormap.from_list('terrain_map_white', colors)
-    
-# Atr = All training
-# Ftr = Forced training; truth for training
-# Itr = Internal training
-# Ava = All validation
-# Fva = Forced validation
-# Iva = Internal validation
 
-def load_npz(filename):
-    npzdat = np.load(filename)
-    Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite, Aev = (npzdat['Atr'], npzdat['Ftr'], npzdat['Itr'],
-                                                        npzdat['Ava'], npzdat['Fva'], npzdat['Iva'],
-                                                        npzdat['Ate'], npzdat['Fte'], npzdat['Ite'],
-                                                        npzdat['Aev'])
-    return Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite, Aev
+# PFtrain = prediction of forced for training data
+# PFtest = predication of forced for evaluation (truth not known) or testing
+# PItrain = prediction of internal for training data
+# PItest = predication of internal for evaluation (truth not known) or testing
+# Ftrain = true forced for training data
+# Ftest = true forced for evaluation (truth not known) or testing
+# Itrain = true internal for training data
+# Itest = true internal for evaluation (truth not known) or testing
+f = np.load(predpath + complete_name + str(settings['seed']) + "_preds.npz")
+unpacked = [np.nan_to_num(f[key]) for key in f]
+PFtrain, PFtest, PItrain, PItest, Ftrain, Ftest, Itrain, Itest = unpacked
 
-Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite, Aev = load_npz(datapath + data_name + ".npz")
-Atr = np.nan_to_num(Atr)
-Ftr = np.nan_to_num(Ftr)
-Itr = np.nan_to_num(Itr)
-time = pd.date_range(start='1/1/1880', end = None, periods=73, freq = "Y")
+# get times and members for reshaping
+n_train_members = data_settings['train_members'].size
+n_test_members = data_settings['test_members'].size
+
+if data_settings['month'] == 'annual':
+    freq = 'Y'
+else:
+    freq = 'M'
+time = pd.date_range(start=time_range[0], end=time_range[1], freq=freq)
 time_n = np.size(time)
 
-# Ptrin = prediction on training data
-# Pval = prediciton on valuation
-# Peval = predication on evaluation; truth not known.
-
-f = np.load(predpath + complete_name + "0_preds.npz")
-Ptrain, Pval, Peval, Ptest = f['Ptrain'], f['Pval'], f['Peval'], f['Ptest']
-Ptrain = np.nan_to_num(Ptrain)
-
 #######################################
-n_members = 25
 # set Truth variable and Prediction variable to the respective variable for the rest of the code to run
-Truth = Fte.squeeze().reshape(n_members, 73, 72, 144)
-Prediction = Ptest.reshape(n_members, 73, 72, 144)
-Full = (Ite+Fte).squeeze().reshape(n_members, 73, 72, 144)
-Truth = np.nan_to_num(Truth)
-Prediction = np.nan_to_num(Prediction)
-Full = np.nan_to_num(Full)
+Truth = Ftest.squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
+Prediction = PFtest.reshape(n_test_members, time_n, lat_n, lon_n)
+Full = (Itest+Ftest).squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
 
 Prediction = xr.DataArray(Prediction, dims = ['members','time','lat','lon'])
-Prediction["members"] = np.arange(n_members)
+Prediction["members"] = np.arange(n_test_members)
 Prediction["time"] = time
 Prediction["lat"] = lat[:]
 Prediction["lon"] = lon[:]
 
 Truth = xr.DataArray(Truth, dims = ['members','time','lat','lon'])
-Truth["members"] = np.arange(n_members)
+Truth["members"] = np.arange(n_test_members)
 Truth["time"] = time
 Truth["lat"] = lat[:]
 Truth["lon"] = lon[:]
 
 Full = xr.DataArray(Full, dims = ['members','time','lat','lon'])
-Full["members"] = np.arange(n_members)
+Full["members"] = np.arange(n_test_members)
 Full["time"] = time
 Full["lat"] = lat[:]
 Full["lon"] = lon[:]
+
 #######################################
 if EVALUATE_SAM:
-    for member in range(n_members):
+    for member in range(n_test_members):
         Pred = Prediction[member]
         Tru = Truth[member]
         SAM_truth, eigenvectors = ef.CalcSAMIndex(lat, lon, Tru, None)
@@ -136,7 +135,7 @@ if EVALUATE_SAM:
         plt.savefig(savepath + str(member) + "_SAM_" + savefig_name)
 
 if EVALUATE_NAO:
-    for member in range(n_members):
+    for member in range(n_test_members):
         Pred = Prediction[member]
         Tru = Truth[member]
         NAO_pred = ef.CalcNAOIndex(lat, lon, Pred)
@@ -154,11 +153,11 @@ if EVALUATE_ENSO:
     plt.figure(figsize = (10,6))
     ef.PlotLines(time, ENSO_pred, "time", "ENSO index", "", "black", "Prediction", None, None)
     ef.PlotLines(time, ENSO_truth, "time", "ENSO index", "", "red", "Truth", None, None)
-    plt.savefig(savepath + str(SAM) + "_" + savefig_name)
+    plt.savefig(savepath + 'ENSO_' + savefig_name)
 
 if FULL_PERIOD_TREND:
     # for member in range(n_members):
-    for member in range(7):
+    for member in range(n_test_members):
         Pred = Prediction[member]
         Tru = Truth[member]
         Ful = Full[member]
@@ -190,10 +189,10 @@ if FULL_PERIOD_TREND:
         # axs.text(430, 8, "The weighted RMSE is: " +str(round(RMSE, 2)), fontsize = 10)
         # axs.text(430, 30, "The weighted Pattern Correlation is: " +str(round(PC)), fontsize = 10)
 
-        plt.savefig("/barnes-scratch/mafern/ForceSMIP/ForceSMIP/evaluate/figures/" + str(member) + "_Full_trend_" + savefig_name)
+        plt.savefig(savepath + str(member) + "_Full_trend_" + savefig_name)
 
 if SUB_PERIOD_TREND:
-    for member in range(n_members):
+    for member in range(n_test_members):
         Pred = Prediction[member]
         Tru = Truth[member]
 
@@ -221,7 +220,7 @@ if SUB_PERIOD_TREND:
             axs.text(430, 8, "The weighted RMSE is: " +str(round(RMSE, 2)), fontsize = 10)
             axs.text(430, 30, "The weighted Pattern Correlation is: " +str(round(PC)), fontsize = 10)
 
-            plt.savefig("/barnes-scratch/mafern/ForceSMIP/ForceSMIP/evaluate/figures/" + str(member) + "_Sub_trend_" + savefig_name)
+            plt.savefig(savepath + str(member) + "_Sub_trend_" + savefig_name)
 
 if PLOT_PRED_EXAMPLE:
     ef.Plot_Gobal_Map(lat, lon, Prediction[sample_n,0,:,:], "Example of a Prediction", Prediction[sample_n,0,:,:].min(), Prediction[sample_n,0,:,:].max(), "Reds", "")
