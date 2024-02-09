@@ -87,14 +87,16 @@ unpacked = [np.nan_to_num(f[key]) for key in f]
 PFtrain, PFtest, PItrain, PItest, Ftrain, Ftest, Itrain, Itest = unpacked
 
 # get times and members for reshaping
-n_train_members = data_settings['train_members'].size
-n_test_members = data_settings['test_members'].size
+n_train_members = np.size(data_settings['train_members'])
+n_test_members = np.size(data_settings['test_members'])
 
 if data_settings['month'] == 'annual':
     freq = 'Y'
+    time = pd.date_range(start=time_range[0], end=time_range[1], freq=freq)
 else:
     freq = 'M'
-time = pd.date_range(start=time_range[0], end=time_range[1], freq=freq)
+    time = pd.date_range(start=time_range[0], end=time_range[1], freq=freq)
+    time = time[::12]
 time_n = np.size(time)
 
 #######################################
@@ -153,7 +155,7 @@ if EVALUATE_ENSO:
     plt.figure(figsize = (10,6))
     ef.PlotLines(time, ENSO_pred, "time", "ENSO index", "", "black", "Prediction", None, None)
     ef.PlotLines(time, ENSO_truth, "time", "ENSO index", "", "red", "Truth", None, None)
-    plt.savefig(savepath + 'ENSO_' + savefig_name)
+    plt.savefig(savepath + str(member) + '_ENSO_' + savefig_name)
 
 if FULL_PERIOD_TREND:
     # for member in range(n_members):
