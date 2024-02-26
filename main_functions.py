@@ -68,8 +68,6 @@ def prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftes
     target_ind = np.where(np.array(settings["input_variable"]) == settings["target_variable"])[0][0]
     Aall = np.concatenate([Atrain, Aval, Atest])
     Ananbool = np.isnan(Aall).any(axis=(0))
-    # for D in [Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest,]:
-    #     D[:, nanbool] = np.nan
     for D in [Atrain, Aval, Atest,]:
         D[:, Ananbool] = np.nan
 
@@ -83,11 +81,9 @@ def prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftes
                                 Itrain, Ival, Itest, 
                                 settings)
     
-def train_and_predict(Xtrain_stand, Ttrain_stand, Xval_stand, Tval_stand, Xtest_stand, Ttest_stand,
-                      Atrain_stand, Aval_stand, Atest_stand, 
-                      Ftrain, Fval, Ftest, Itrain, Ival, Itest, 
-                      fmean, fstd, imean, istd,
-                      ARGS, settings):
+def train_and_predict(Xtrain_stand, Xval_stand, Xtest_stand, Ttrain_stand, Tval_stand, Ttest_stand,
+                      Ttrain_mean, Ttrain_std, Tval_mean, Tval_std, Ttest_mean, Ttest_std,
+                      ARGS, settings,):
     ved, encoder, decoder = VED.train_VED(Xtrain_stand, Ttrain_stand, Xval_stand, Tval_stand, settings)
     # save trained model
     model_savename = os.path.join('saved_models', ARGS.exp_name, ARGS.exp_name+str(settings["seed"])+"_model")
@@ -101,8 +97,8 @@ def train_and_predict(Xtrain_stand, Ttrain_stand, Xval_stand, Tval_stand, Xtest_
     # make predictions for the training, validation, and evaluation inputs
     Ptrain_stand, Pval_stand, Ptest_stand = ved.predict(Xtrain_stand), ved.predict(Xval_stand), ved.predict(Xtest_stand)
 
-    print('Ptrain_stand:', Ptrain_stand.shape)
-    print('Xtrain_stand:', Xtrain_stand.shape)
+    print('Ptrain_stand shape:', Ptrain_stand.shape)
+    print('Xtrain_stand shape:', Xtrain_stand.shape)
 
     # convert back to unstandardized values , note: PF refers to the predicted forced response, 
     # and PI to the predicted internal variablility

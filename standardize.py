@@ -113,6 +113,14 @@ def self_standardize(D, climo=None, mean_only=False):
 def unstandardize(D, Dmean, Dstd):
     return D * Dstd + Dmean
 
+def standardize_for_each_member(D_orig):
+    n_yrs = 73 # HARDCODE FIXME
+    D = D_orig.reshape(D_orig.shape[0]//n_yrs, n_yrs, D_orig.shape[1], D_orig.shape[2])
+    Dmean = D.mean(axis=(1,))[:, None, ...]
+    Dstd = D.std(axis=(1,))[:, None, ...]
+    D = np.nan_to_num((D - Dmean) / Dstd).reshape(D_orig.shape)
+    return D, Dmean, Dstd
+
 def unstandardize_predictions(Atr_stand, Ava_stand, Ate_stand,
                               Ptr_stand, Pva_stand, Pte_stand,
                               fmean, fstd, imean, istd,
@@ -153,55 +161,96 @@ def standardize_all_data(Atr, Ava, Ate,
                     Ftr, Fva, Fte,
                     Itr, Iva, Ite,
                     settings):
-    mean_only = True
     # Standardize the inputs
-    Xclimo = self_standardize(Ate, mean_only=mean_only).mean(axis=0)[None, ...]
-    Xtr_stand = self_standardize(self_standardize(Atr, climo=Xclimo, mean_only=mean_only))
-    Xva_stand = self_standardize(self_standardize(Ava, climo=Xclimo, mean_only=mean_only))
-    Xte_stand = self_standardize(self_standardize(Ate, climo=Xclimo, mean_only=mean_only))
+    Xtr_stand = self_standardize(self_standardize(Atr))
+    Xtr_stand, __, __ = standardize_for_each_member(Xtr_stand)
+    Xva_stand = self_standardize(self_standardize(Ava))
+    Xva_stand, __, __ = standardize_for_each_member(Xva_stand)
+    Xte_stand = self_standardize(self_standardize(Ate))
+    Xte_stand, __, __ = standardize_for_each_member(Xte_stand)
 
     # Standardize the outputs
-    amean = Atr.mean(axis=(0))
-    astd = Atr.std(axis=(0))
+    Atr_stand, Atr_mean, Atr_std = standardize_for_each_member(Atr)
+    Ava_stand, Ava_mean, Ava_std  = standardize_for_each_member(Ava)
+    Ate_stand, Ate_mean, Ate_std  = standardize_for_each_member(Ate)
 
-    Atr_stand = standardize(Atr, amean, astd)
-    Ava_stand = standardize(Ava, amean, astd)
-    Ate_stand = standardize(Ate, amean, astd)
+    Ftr_stand, Ftr_mean, Ftr_std = standardize_for_each_member(Ftr)
+    Fva_stand, Fva_mean, Fva_std  = standardize_for_each_member(Fva)
+    Fte_stand, Fte_mean, Fte_std  = standardize_for_each_member(Fte)
 
-    imean = Itr.mean(axis=(0))
-    istd = Itr.std(axis=(0))
+    Itr_stand, Itr_mean, Itr_std = standardize_for_each_member(Itr)
+    Iva_stand, Iva_mean, Iva_std  = standardize_for_each_member(Iva)
+    Ite_stand, Ite_mean, Ite_std  = standardize_for_each_member(Ite)
 
-    Itr_stand = standardize(Itr, imean, istd)
-    Iva_stand = standardize(Iva, imean, istd)
-
-    fmean = Ftr.mean(axis=(0))
-    fstd = Ftr.std(axis=(0))
-
-    Ftr_stand = standardize(Ftr, fmean, fstd)
-    Fva_stand = standardize(Fva, fmean, fstd)
-    
-    if settings['evaluate']:
-        Ite_stand = np.full_like(Ate_stand, np.nan)
-        Fte_stand = np.full_like(Ate_stand, np.nan)
-    else:
-        Ite_stand = standardize(Ite, imean, istd)
-        Fte_stand = standardize(Fte, fmean, fstd)
-
+    Ftr_stand, Ftr_mean, Ftr_std = standardize_for_each_member(Ftr)
+    Fva_stand, Fva_mean, Fva_std  = standardize_for_each_member(Fva)
+    Fte_stand, Fte_mean, Fte_std  = standardize_for_each_member(Fte)
     if settings['target_component'] == 'internal':
         Ttr_stand = Itr_stand
         Tva_stand = Iva_stand
         Tte_stand = Ite_stand
+        Ttr_mean = Itr_mean
+        Ttr_std = Itr_std
+        Tva_mean = Iva_mean
+        Tva_std = Iva_std
+        Tte_mean = Ite_mean
+        Tte_std = Ite_std
     elif settings['target_component'] == 'forced':
         Ttr_stand = Ftr_stand
         Tva_stand = Fva_stand
         Tte_stand = Fte_stand
+        Ttr_mean = Ftr_mean
+        Ttr_std = Ftr_std
+        Tva_mean = Fva_mean
+        Tva_std = Fva_std
+        Tte_mean = Fte_mean
+        Tte_std = Fte_std
 
     return  Xtr_stand, Xva_stand, Xte_stand, \
-            Atr_stand, Ava_stand, Ate_stand, \
-            Itr_stand, Iva_stand, Ite_stand, \
-            Ftr_stand, Fva_stand, Fte_stand, \
             Ttr_stand, Tva_stand, Tte_stand, \
-            amean, astd, imean, istd, fmean, fstd
+            Ttr_mean, Ttr_std, Tva_mean, Tva_std, Tte_mean, Tte_std
+
+    # amean = Atr.mean(axis=(0))
+    # astd = Atr.std(axis=(0))
+
+    # Atr_stand = standardize(Atr, amean, astd)
+    # Ava_stand = standardize(Ava, amean, astd)
+    # Ate_stand = standardize(Ate, amean, astd)
+
+    # imean = Itr.mean(axis=(0))
+    # istd = Itr.std(axis=(0))
+
+    # Itr_stand = standardize(Itr, imean, istd)
+    # Iva_stand = standardize(Iva, imean, istd)
+
+    # fmean = Ftr.mean(axis=(0))
+    # fstd = Ftr.std(axis=(0))
+
+    # Ftr_stand = standardize(Ftr, fmean, fstd)
+    # Fva_stand = standardize(Fva, fmean, fstd)
+    
+    # if settings['evaluate']:
+    #     Ite_stand = np.full_like(Ate_stand, np.nan)
+    #     Fte_stand = np.full_like(Ate_stand, np.nan)
+    # else:
+    #     Ite_stand = standardize(Ite, imean, istd)
+    #     Fte_stand = standardize(Fte, fmean, fstd)
+
+    # if settings['target_component'] == 'internal':
+    #     Ttr_stand = Itr_stand
+    #     Tva_stand = Iva_stand
+    #     Tte_stand = Ite_stand
+    # elif settings['target_component'] == 'forced':
+    #     Ttr_stand = Ftr_stand
+    #     Tva_stand = Fva_stand
+    #     Tte_stand = Fte_stand
+
+    # return  Xtr_stand, Xva_stand, Xte_stand, \
+    #         Atr_stand, Ava_stand, Ate_stand, \
+    #         Itr_stand, Iva_stand, Ite_stand, \
+    #         Ftr_stand, Fva_stand, Fte_stand, \
+    #         Ttr_stand, Tva_stand, Tte_stand, \
+    #         amean, astd, imean, istd, fmean, fstd
 
 
 
