@@ -81,7 +81,8 @@ def prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftes
                                 Itrain, Ival, Itest, 
                                 settings)
     
-def train_and_predict(Atrain, Aval, Atest, 
+def train_and_predict(Atrain, Aval, Atest,
+                      Ftrain, Itrain, Ftest, Itest,
                       Xtrain_stand, Xval_stand, Xtest_stand, 
                       Ttrain_stand, Tval_stand, Ttest_stand,
                       Ttrain_mean, Ttrain_std, Tval_mean, Tval_std, Ttest_mean, Ttest_std,
