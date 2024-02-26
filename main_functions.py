@@ -81,7 +81,9 @@ def prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftes
                                 Itrain, Ival, Itest, 
                                 settings)
     
-def train_and_predict(Xtrain_stand, Xval_stand, Xtest_stand, Ttrain_stand, Tval_stand, Ttest_stand,
+def train_and_predict(Atrain, Aval, Atest, 
+                      Xtrain_stand, Xval_stand, Xtest_stand, 
+                      Ttrain_stand, Tval_stand, Ttest_stand,
                       Ttrain_mean, Ttrain_std, Tval_mean, Tval_std, Ttest_mean, Ttest_std,
                       ARGS, settings,):
     ved, encoder, decoder = VED.train_VED(Xtrain_stand, Ttrain_stand, Xval_stand, Tval_stand, settings)
@@ -103,10 +105,12 @@ def train_and_predict(Xtrain_stand, Xval_stand, Xtest_stand, Ttrain_stand, Tval_
     # convert back to unstandardized values , note: PF refers to the predicted forced response, 
     # and PI to the predicted internal variablility
     PFtrain, PFval, PFtest, \
-    PItrain, PIval, PItest = unstandardize_predictions(Atrain_stand, Aval_stand, Atest_stand,
-                                                                    Ptrain_stand, Pval_stand, Ptest_stand,
-                                                                    amean, astd, fmean, fstd, imean, istd,
-                                                                    settings)
+    PItrain, PIval, PItest = unstandardize_predictions(Atrain, Aval, Atest,
+                                                        Ptrain_stand, Pval_stand, Ptest_stand,
+                                                        Ttrain_mean, Ttrain_std, 
+                                                        Tval_mean, Tval_std, 
+                                                        Ttest_mean, Ttest_std,
+                                                        settings)
 
     if settings['save_predictions']:
         # save the predictions

@@ -121,22 +121,32 @@ def standardize_for_each_member(D_orig):
     D = np.nan_to_num((D - Dmean) / Dstd).reshape(D_orig.shape)
     return D, Dmean, Dstd
 
-def unstandardize_predictions(Atr_stand, Ava_stand, Ate_stand,
+def unstandardize_for_each_member(D_orig, Dmean, Dstd):
+    n_yrs = 73 # HARDCODE FIXME
+    D = D_orig.reshape(D_orig.shape[0]//n_yrs, n_yrs, D_orig.shape[1], D_orig.shape[2])
+    D = np.nan_to_num(D * Dstd + Dmean).reshape(D_orig.shape)
+    return D
+
+def unstandardize_predictions(Atrain, Aval, Atest,
                               Ptr_stand, Pva_stand, Pte_stand,
-                              amean, astd, fmean, fstd, imean, istd,
+                              Ttr_mean, Ttr_std, 
+                              Tva_mean, Tva_std, 
+                              Tte_mean, Tte_std,
                               settings):
+                              
     # get the target index, in case there are multiple input variables
     target_index = np.where(np.array(settings['input_variable']) == np.array(settings['target_variable']))[0]
-    # unstandardize the full maps
-    Atr = unstandardize(Atr_stand, amean, astd)[..., target_index]
-    Ava = unstandardize(Ava_stand, amean, astd)[..., target_index]
-    Ate = unstandardize(Ate_stand, amean, astd)[..., target_index]
+    # select 'all' for just the variable correlating to the target
+    Atr = Atrain[..., target_index]
+    Ava = Aval[..., target_index]
+    Ate = Atest[..., target_index]
+
+    # unstandardize the predictions, in this case forced
+    Ptr = unstandardize_for_each_member(Ptr_stand, Ttr_mean, Ttr_std)
+    Pva = unstandardize_for_each_member(Pva_stand, Tva_mean, Tva_std)
+    Pte = unstandardize_for_each_member(Pte_stand, Tte_mean, Tte_std)
     
     if settings['target_component'] == 'forced':
-        # unstandardize the predictions, in this case forced
-        Ptr = unstandardize(Ptr_stand, fmean, fstd)
-        Pva = unstandardize(Pva_stand, fmean, fstd)
-        Pte = unstandardize(Pte_stand, fmean, fstd)
         # calculate internal as full - forced
         PItr = Atr - Ptr
         PIva = Ava - Pva
@@ -147,10 +157,6 @@ def unstandardize_predictions(Atr_stand, Ava_stand, Ate_stand,
         PFte = Pte
 
     if settings['target_component'] == 'internal':
-        # unstandardize the predictions, in this case internal
-        Ptr = unstandardize(Ptr_stand, imean, istd)
-        Pva = unstandardize(Pva_stand, imean, istd)
-        Pte = unstandardize(Pte_stand, imean, istd)
         # calculate forced as full - internal
         PFtr = Atr - Ptr
         PFva = Ava - Pva
@@ -162,6 +168,8 @@ def unstandardize_predictions(Atr_stand, Ava_stand, Ate_stand,
 
     return PFtr, PFva, PFte, \
         PItr, PIva, PIte
+
+
 
 def standardize_all_data(Atr, Ava, Ate,
                     Ftr, Fva, Fte,
