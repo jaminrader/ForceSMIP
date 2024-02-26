@@ -115,7 +115,7 @@ def unstandardize(D, Dmean, Dstd):
 
 def standardize_for_each_member(D_orig):
     n_yrs = 73 # HARDCODE FIXME
-    D = D_orig.reshape(D_orig.shape[0]//n_yrs, n_yrs, D_orig.shape[1], D_orig.shape[2])
+    D = D_orig.reshape(D_orig.shape[0]//n_yrs, n_yrs, D_orig.shape[1], D_orig.shape[2], D_orig.shape[3])
     Dmean = D.mean(axis=(1,))[:, None, ...]
     Dstd = D.std(axis=(1,))[:, None, ...]
     D = np.nan_to_num((D - Dmean) / Dstd).reshape(D_orig.shape)
@@ -123,7 +123,7 @@ def standardize_for_each_member(D_orig):
 
 def unstandardize_for_each_member(D_orig, Dmean, Dstd):
     n_yrs = 73 # HARDCODE FIXME
-    D = D_orig.reshape(D_orig.shape[0]//n_yrs, n_yrs, D_orig.shape[1], D_orig.shape[2])
+    D = D_orig.reshape(D_orig.shape[0]//n_yrs, n_yrs, D_orig.shape[1], D_orig.shape[2], D_orig.shape[3])
     D = np.nan_to_num(D * Dstd + Dmean).reshape(D_orig.shape)
     return D
 
