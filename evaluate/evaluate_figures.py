@@ -17,19 +17,18 @@ import sys
 sys.path.insert(1, "/barnes-scratch/mafern/ForceSMIP/ForceSMIP/")
 import experiments as exp
 
-
-data_name = "Train4_Val4_CESM2_tos_tos"
+data_name = "Train4_Val4_MIROC-ES2L_tos_tos"
 model_name = "test"
 
 complete_name = model_name + "_" + data_name
 settings = exp.get_experiment(model_name)
 data_settings = exp.data_dictionary[data_name]
-# datapath = "/barnes-scratch/mafern/ForceSMIP/ForceSMIP/exp_data/"
-# predpath = "/barnes-scratch/mafern/ForceSMIP/ForceSMIP/saved_predictions/"
-# savepath = "../barnes-scratch/mafern/ForceSMIP/ForceSMIP/evaluate/figures/"
-datapath = os.path.abspath("exp_data")+'/'
-predpath = os.path.abspath("saved_predictions")+'/'
-savepath = os.path.abspath("evaluate/figures")+'/'
+datapath = "/barnes-scratch/mafern/ForceSMIP/ForceSMIP/exp_data/"
+predpath = "/barnes-scratch/mafern/ForceSMIP/ForceSMIP/saved_predictions/"
+savepath = "../barnes-scratch/mafern/ForceSMIP/ForceSMIP/evaluate/figures/"
+# datapath = os.path.abspath("exp_data")+'/'
+# predpath = os.path.abspath("saved_predictions")+'/'
+# savepath = os.path.abspath("evaluate/figures")+'/'
 savefig_name = data_settings['target_variable'] + '_' + settings['target_component']
 
 VARIABLE = data_settings['target_variable']
@@ -41,10 +40,9 @@ evalPeriods = {
 }
 time_range = evalPeriods[TIER]
 
-
 sample_n = 1 #used for functions that plot a single sample
-PLOT_PRED_EXAMPLE = True
-PLOT_AVG_ABS_DIFF = True
+PLOT_PRED_EXAMPLE = False
+PLOT_AVG_ABS_DIFF = False
 
 PATTERN_CORRELATION = False
 
@@ -87,8 +85,9 @@ unpacked = [np.nan_to_num(f[key]) for key in f]
 PFtrain, PFtest, PItrain, PItest, Ftrain, Ftest, Itrain, Itest = unpacked
 
 # get times and members for reshaping
-n_train_members = np.size(data_settings['train_members'])
-n_test_members = np.size(data_settings['test_members'])
+print(type(data_settings["train_members"]))
+n_train_members = np.size(data_settings["train_members"])
+n_test_members = np.size(data_settings["test_members"])
 
 if data_settings['month'] == 'annual':
     freq = 'Y'
@@ -96,14 +95,17 @@ if data_settings['month'] == 'annual':
 else:
     freq = 'M'
     time = pd.date_range(start=time_range[0], end=time_range[1], freq=freq)
-    time = time[::12]
+    time = time[::12] #Added by Charlie to get the right time length when only predicting a single month. 
 time_n = np.size(time)
 
 #######################################
 # set Truth variable and Prediction variable to the respective variable for the rest of the code to run
 Truth = Ftest.squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
-Prediction = PFtest.reshape(n_test_members, time_n, lat_n, lon_n)
+# Prediction = PFtest.reshape(n_test_members, time_n, lat_n, lon_n)
+Prediction = (Itest+Ftest-PItest).reshape(n_test_members, time_n, lat_n, lon_n)
 Full = (Itest+Ftest).squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
+PItest = (PItest).squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
+Itest = (Itest).squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
 
 Prediction = xr.DataArray(Prediction, dims = ['members','time','lat','lon'])
 Prediction["members"] = np.arange(n_test_members)
@@ -123,7 +125,67 @@ Full["time"] = time
 Full["lat"] = lat[:]
 Full["lon"] = lon[:]
 
+PItest = xr.DataArray(PItest, dims = ['members','time','lat','lon'])
+PItest["members"] = np.arange(n_test_members)
+PItest["time"] = time
+PItest["lat"] = lat[:]
+PItest["lon"] = lon[:]
+
+Itest = xr.DataArray(Itest, dims = ['members','time','lat','lon'])
+Itest["members"] = np.arange(n_test_members)
+Itest["time"] = time
+Itest["lat"] = lat[:]
+Itest["lon"] = lon[:]
 #######################################
+
+member = 2
+GLOBALMEAN_TIMESERIES = True
+if GLOBALMEAN_TIMESERIES:
+    Truth_GM = ef.CalcGlobalMean(Itest[member,:,:,:], lat)
+    Prediction_GM = ef.CalcGlobalMean(PItest[member,:,:,:], lat) 
+
+    plt.figure()
+    plt.plot(Truth_GM, color = "black", label = "truth")
+    plt.plot(Prediction_GM, color = "red", label = "prediction")
+    plt.legend()
+    plt.title("Internal Variability")
+    plt.savefig("/barnes-scratch/mafern/ForceSMIP/ForceSMIP/evaluate/figures/I_Global_TimesSeries_" + savefig_name)
+
+    Truth_GM = ef.CalcGlobalMean(Truth[member,:,:,:], lat)
+    Prediction_GM = ef.CalcGlobalMean((Full[member,:,:,:] - Itest[0,:,:,:]), lat) 
+
+    plt.figure()
+    plt.plot(Truth_GM, color = "black", label = "truth")
+    plt.plot(Prediction_GM, color = "red", label = "Full - T IV")
+    plt.legend()
+    plt.title("True Forced Response")
+    plt.savefig("/barnes-scratch/mafern/ForceSMIP/ForceSMIP/evaluate/figures/FT_Global_TimesSeries_" + savefig_name)
+
+    Truth_GM = ef.CalcGlobalMean(Truth[member,:,:,:], lat)
+    Prediction_GM = ef.CalcGlobalMean((Full[member,:,:,:] - PItest[0,:,:,:]), lat) 
+
+    plt.figure()
+    plt.plot(Truth_GM, color = "black", label = "truth")
+    plt.plot(Prediction_GM, color = "red", label = "Full - P IV")
+    plt.legend()
+    plt.title("Predicted Forced Response")
+    plt.savefig("/barnes-scratch/mafern/ForceSMIP/ForceSMIP/evaluate/figures/FP_Global_TimesSeries_" + savefig_name)
+
+    Truth_GM = ef.CalcGlobalMean(Truth[member,:,:,:], lat)
+    Prediction_GM = ef.CalcGlobalMean(Prediction[0,:,:,:], lat) 
+    Full_GM = ef.CalcGlobalMean(Full[member,:,:,:], lat)
+
+    plt.figure()
+    plt.plot(Truth_GM, color = "black", label = "truth")
+    plt.plot(Prediction_GM, color = "red", label = "prediction")
+    plt.plot(Full_GM, color = "green", label = "full")
+    plt.legend()
+    plt.title("Forced Response")
+    plt.savefig("/barnes-scratch/mafern/ForceSMIP/ForceSMIP/evaluate/figures/F_Global_TimesSeries_" + savefig_name)
+
+    #############
+sys.exit(0)
+
 if EVALUATE_SAM:
     for member in range(n_test_members):
         Pred = Prediction[member]
@@ -155,7 +217,7 @@ if EVALUATE_ENSO:
     plt.figure(figsize = (10,6))
     ef.PlotLines(time, ENSO_pred, "time", "ENSO index", "", "black", "Prediction", None, None)
     ef.PlotLines(time, ENSO_truth, "time", "ENSO index", "", "red", "Truth", None, None)
-    plt.savefig(savepath + str(member) + '_ENSO_' + savefig_name)
+    plt.savefig(savepath + 'ENSO_' + savefig_name)
 
 if FULL_PERIOD_TREND:
     # for member in range(n_members):
@@ -190,6 +252,8 @@ if FULL_PERIOD_TREND:
         axs = ef.Plot2b2_colormesh_o3(Truth_Trend, Predicted_Trend, Predicted_Trend-Truth_Trend, Full_Trend, lat, lon, -2, 2)
         # axs.text(430, 8, "The weighted RMSE is: " +str(round(RMSE, 2)), fontsize = 10)
         # axs.text(430, 30, "The weighted Pattern Correlation is: " +str(round(PC)), fontsize = 10)
+
+        print(round(PC))
 
         plt.savefig(savepath + str(member) + "_Full_trend_" + savefig_name)
 
@@ -234,5 +298,6 @@ if PLOT_AVG_ABS_DIFF:
     ef.Plot_Gobal_Map(lat, lon, Difference, "Average Absolute Difference between \nTruth and Prediction", Difference.min(), Difference.max(), tmap, "")
     plt.savefig(savepath + "sample_difference_" + savefig_name)
     
+print("DONE!")
 
 
