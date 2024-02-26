@@ -103,11 +103,9 @@ def train_and_predict(Xtrain_stand, Xval_stand, Xtest_stand, Ttrain_stand, Tval_
     # convert back to unstandardized values , note: PF refers to the predicted forced response, 
     # and PI to the predicted internal variablility
     PFtrain, PFval, PFtest, \
-    PItrain, PIval, PItest, \
-    PFtrain_stand, PFval_stand, PFtest_stand, \
-    PItrain_stand, PIval_stand, PItest_stand = unstandardize_predictions(Atrain_stand, Aval_stand, Atest_stand,
+    PItrain, PIval, PItest = unstandardize_predictions(Atrain_stand, Aval_stand, Atest_stand,
                                                                     Ptrain_stand, Pval_stand, Ptest_stand,
-                                                                    fmean, fstd, imean, istd,
+                                                                    amean, astd, fmean, fstd, imean, istd,
                                                                     settings)
 
     if settings['save_predictions']:

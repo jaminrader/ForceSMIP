@@ -123,39 +123,45 @@ def standardize_for_each_member(D_orig):
 
 def unstandardize_predictions(Atr_stand, Ava_stand, Ate_stand,
                               Ptr_stand, Pva_stand, Pte_stand,
-                              fmean, fstd, imean, istd,
+                              amean, astd, fmean, fstd, imean, istd,
                               settings):
+    # get the target index, in case there are multiple input variables
+    target_index = np.where(np.array(settings['input_variable']) == np.array(settings['target_variable']))[0]
+    # unstandardize the full maps
+    Atr = unstandardize(Atr_stand, amean, astd)[..., target_index]
+    Ava = unstandardize(Ava_stand, amean, astd)[..., target_index]
+    Ate = unstandardize(Ate_stand, amean, astd)[..., target_index]
     
     if settings['target_component'] == 'forced':
-        PItr_stand = Atr_stand - Ptr_stand
-        PIva_stand = Ava_stand - Pva_stand
-        PIte_stand = Ate_stand - Pte_stand
-
-        PFtr_stand = Ptr_stand
-        PFva_stand = Pva_stand
-        PFte_stand = Pte_stand
+        # unstandardize the predictions, in this case forced
+        Ptr = unstandardize(Ptr_stand, fmean, fstd)
+        Pva = unstandardize(Pva_stand, fmean, fstd)
+        Pte = unstandardize(Pte_stand, fmean, fstd)
+        # calculate internal as full - forced
+        PItr = Atr - Ptr
+        PIva = Ava - Pva
+        PIte = Ate - Pte
+        # return forced predictions
+        PFtr = Ptr
+        PFva = Pva
+        PFte = Pte
 
     if settings['target_component'] == 'internal':
-        PFtr_stand = Atr_stand - Ptr_stand
-        PFva_stand = Ava_stand - Pva_stand
-        PFte_stand = Ate_stand - Pte_stand
-
-        PItr_stand = Ptr_stand
-        PIva_stand = Pva_stand
-        PIte_stand = Pte_stand
-
-    PFtr = unstandardize(PFtr_stand, fmean, fstd)
-    PFva = unstandardize(PFva_stand, fmean, fstd)
-    PFte = unstandardize(PFte_stand, fmean, fstd)
-
-    PItr = unstandardize(PItr_stand, imean, istd)
-    PIva = unstandardize(PIva_stand, imean, istd)
-    PIte = unstandardize(PIte_stand, imean, istd)
+        # unstandardize the predictions, in this case internal
+        Ptr = unstandardize(Ptr_stand, imean, istd)
+        Pva = unstandardize(Pva_stand, imean, istd)
+        Pte = unstandardize(Pte_stand, imean, istd)
+        # calculate forced as full - internal
+        PFtr = Atr - Ptr
+        PFva = Ava - Pva
+        PFte = Ate - Pte
+        # return internal predictions
+        PItr = Ptr
+        PIva = Pva
+        PIte = Pte
 
     return PFtr, PFva, PFte, \
-           PItr, PIva, PIte, \
-           PFtr_stand, PFva_stand, PFte_stand, \
-           PItr_stand, PIva_stand, PIte_stand
+        PItr, PIva, PIte
 
 def standardize_all_data(Atr, Ava, Ate,
                     Ftr, Fva, Fte,

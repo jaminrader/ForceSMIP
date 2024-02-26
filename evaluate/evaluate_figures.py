@@ -17,8 +17,9 @@ import sys
 sys.path.insert(1, "/barnes-scratch/mafern/ForceSMIP/ForceSMIP/")
 import experiments as exp
 
-data_name = "Train4_Val4_MIROC-ES2L_tos_tos"
-model_name = "test"
+
+data_name = "Train4_Val4_CESM2_all_pr"
+model_name = "internal_feature"
 
 complete_name = model_name + "_" + data_name
 settings = exp.get_experiment(model_name)
@@ -106,6 +107,8 @@ Prediction = (Itest+Ftest-PItest).reshape(n_test_members, time_n, lat_n, lon_n)
 Full = (Itest+Ftest).squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
 PItest = (PItest).squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
 Itest = (Itest).squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
+PItest = (PItest).squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
+Itest = (Itest).squeeze().reshape(n_test_members, time_n, lat_n, lon_n)
 
 Prediction = xr.DataArray(Prediction, dims = ['members','time','lat','lon'])
 Prediction["members"] = np.arange(n_test_members)
@@ -125,6 +128,17 @@ Full["time"] = time
 Full["lat"] = lat[:]
 Full["lon"] = lon[:]
 
+PItest = xr.DataArray(PItest, dims = ['members','time','lat','lon'])
+PItest["members"] = np.arange(n_test_members)
+PItest["time"] = time
+PItest["lat"] = lat[:]
+PItest["lon"] = lon[:]
+
+Itest = xr.DataArray(Itest, dims = ['members','time','lat','lon'])
+Itest["members"] = np.arange(n_test_members)
+Itest["time"] = time
+Itest["lat"] = lat[:]
+Itest["lon"] = lon[:]
 PItest = xr.DataArray(PItest, dims = ['members','time','lat','lon'])
 PItest["members"] = np.arange(n_test_members)
 PItest["time"] = time
