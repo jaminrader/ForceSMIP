@@ -44,7 +44,8 @@ Xtrain_stand, Xval_stand, Xtest_stand, \
 # build model, train, save, make predictions
 PFtrain, PFval, PFtest, PItrain, PIval, PItest = \
     train_and_predict(Atrain, Aval, Atest,
-    ``                Xtrain_stand, Xval_stand, Xtest_stand,
+                      Ftrain, Itrain, Ftest, Itest,
+                      Xtrain_stand, Xval_stand, Xtest_stand,
                       Ttrain_stand, Tval_stand, Ttest_stand,
                       Ttrain_mean, Ttrain_std, 
                       Tval_mean, Tval_std, 
