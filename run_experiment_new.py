@@ -36,20 +36,19 @@ Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest  = preprocess(sett
 # -------------------------------------------------------------------------------------------
 # prepare the data for training (deal with NaNs, standardize data)
 Xtrain_stand, Xval_stand, Xtest_stand, \
-    Atrain_stand, Aval_stand, Atest_stand, \
-    Itrain_stand, Ival_stand, Itest_stand, \
-    Ftrain_stand, Fval_stand, Ftest_stand, \
     Ttrain_stand, Tval_stand, Ttest_stand, \
-    amean, astd, imean, istd, fmean, fstd = prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest, settings)
+    Ttrain_mean, Ttrain_std, Tval_mean, Tval_std, Ttest_mean, Ttest_std = prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest, settings)
 
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
 # build model, train, save, make predictions
-PFtrain, PFval, PFtest, PItrain, PIval, PItest = train_and_predict(Xtrain_stand, Ttrain_stand, Xval_stand, Tval_stand, Xtest_stand, Ttest_stand,
-                                                                    Atrain_stand, Aval_stand, Atest_stand, 
-                                                                    Ftrain, Fval, Ftest, Itrain, Ival, Itest, 
-                                                                    fmean, fstd, imean, istd,
-                                                                    ARGS, settings)
+PFtrain, PFval, PFtest, PItrain, PIval, PItest = \
+    train_and_predict(Xtrain_stand, Xval_stand, Xtest_stand,
+                      Ttrain_stand, Tval_stand, Ttest_stand,
+                      Ttrain_mean, Ttrain_std, 
+                      Tval_mean, Tval_std, 
+                      Ttest_mean, Ttest_std,
+                      ARGS, settings,)
 
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
