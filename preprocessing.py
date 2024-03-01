@@ -46,8 +46,8 @@ fullmems = {
     "MPI-ESM1-2-LR": 30,
     "MIROC-ES2L": 30,
 }
-nlat = 72
-nlon = 144
+# nlat = 72
+# nlon = 144
 
 
 def load_model(model, var, timecut="Tier1", ntrainmems=20, month="annual"):
@@ -133,10 +133,12 @@ def make_data(models=["CESM2", "MIROC6", "CanESM5"], var="tos", timecut="Tier1",
         # only use the requested members
         da_i_np = da_np[mems] - da_f_np
         # reshape these to dimensions: [samples, lat, lon]
-        da_np = np.reshape(da_np[mems], (-1, nlat, nlon))
+        shape2 = da_np.shape[2]
+        shape3 = da_np.shape[3]
+        da_np = np.reshape(da_np[mems], (-1, shape2, shape3))
         # for forced response, repeat nmems times to match full and internal
-        da_f_np = np.reshape([da_f_np]*nmems, (-1, nlat, nlon))
-        da_i_np = np.reshape(da_i_np, (-1, nlat, nlon))
+        da_f_np = np.reshape([da_f_np]*nmems, (-1, shape2, shape3))
+        da_i_np = np.reshape(da_i_np, (-1, shape2, shape3))
         # stack the models together        
         if imod == 0:
             Xfull = da_np
