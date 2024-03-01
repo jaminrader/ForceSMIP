@@ -21,18 +21,21 @@ def preprocess(settings):
         for ii, var in enumerate(settings["input_variable"]):
             # load the training and validation sets for this variable, dimensions: [samples x lat x lon]
             Atr, Ftr, Itr = preprocessing.make_data(models=settings["train_models"], var=var,
-                                            timecut=settings["time_range"], mems=settings["train_members"])
+                                            timecut=settings["time_range"], mems=settings["train_members"],
+                                            month=settings["month"])
             Ava, Fva, Iva = preprocessing.make_data(models=settings["val_models"], var=var,
-                                            timecut=settings["time_range"], mems=settings["val_members"])
+                                            timecut=settings["time_range"], mems=settings["val_members"],
+                                            month=settings["month"])
             # include our own testing split using ensembles for tuning purposes
             if settings["evaluate"] == False:
                 Ate, Fte, Ite = preprocessing.make_data(models=settings["test_models"], var=var,
-                                        timecut=settings["time_range"], mems=settings["test_members"])
+                                        timecut=settings["time_range"], mems=settings["test_members"],
+                                        month=settings["month"])
             # if it's evaluation data, get the 'all' maps (A) but make the truths nans
             else:        
                 # evalmem = settings['evaluate']
                 #Ate = preprocessing.make_eval_mem(evalmem=evalmem, var=var, timecut=settings["time_range"])
-                Ate = preprocessing.make_all_eval_mem(var=var, timecut=settings["time_range"])
+                Ate = preprocessing.make_all_eval_mem(var=var, timecut=settings["time_range"], month=settings["month"])
                 Fte = np.full_like(Ate, np.nan)
                 Ite = np.full_like(Ate, np.nan)
 
