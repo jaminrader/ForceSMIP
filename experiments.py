@@ -133,13 +133,24 @@ data_dictionary = {
 
     "standard":{
         "train_models"  : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L","CESM2"),
-        "val_models"    : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "val_models"    : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L","CESM2"),
         "test_models"   : (),
         "train_members" : np.arange(18),
         "val_members"   : np.arange(18, 25),
         "test_members"  : np.arange(25),
         "time_range" : "Tier1",
         "evaluate": True,
+    },
+
+    "CESMval":{
+        "train_models"  : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "val_models"    : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "test_models"   : ("CESM2",),
+        "train_members" : np.arange(18),
+        "val_members"   : np.arange(18, 25),
+        "test_members"  : np.arange(25),
+        "time_range" : "Tier1",
+        "evaluate": False,
     },
 }
 
@@ -151,7 +162,14 @@ for var in vars:
         data_dictionary[key] = data_dictionary['standard'].copy()
         data_dictionary[key]["input_variable"] = (var,)
         data_dictionary[key]["target_variable"] = var
-        data_dictionary[key]["month"] = month 
+        data_dictionary[key]["month"] = month
+
+        key = 'CESMval_' + var + '_' + str(month)
+        data_dictionary[key] = data_dictionary['CESMval'].copy()
+        data_dictionary[key]["input_variable"] = (var,)
+        data_dictionary[key]["target_variable"] = var
+        data_dictionary[key]["month"] = month
+
 
 experiments = {
     # "exp_template" : {
