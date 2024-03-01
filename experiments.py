@@ -1,10 +1,12 @@
 import numpy as np
 
+# allow same data to be used for different experiments
 def add_data_to_experiment(settings, data_name):
     for key in data_dictionary[data_name]:
         settings[key] = data_dictionary[data_name][key]
     return settings
 
+# get settings for this experiment, set up directories
 def get_experiment(exp_name, settings_overwrite=None):
 
     if settings_overwrite is None:
@@ -19,6 +21,7 @@ def get_experiment(exp_name, settings_overwrite=None):
 
     return settings
 
+# dictionary of different data splits and variables
 data_dictionary = {
     # "data_template":{
     #     "input_variable": ["tos",], # List of variables for input
@@ -154,6 +157,7 @@ data_dictionary = {
     },
 }
 
+# handle running a different model for each month
 months = ["annual","1","2","3","4","5","6","7","8","9","10","11","12",]
 vars = ["pr", "psl", "tas", "zmta", "tos", "siconc", "monmaxpr", "monmaxtasmax", "monmintasmin",]
 for var in vars:
@@ -170,7 +174,7 @@ for var in vars:
         data_dictionary[key]["target_variable"] = var
         data_dictionary[key]["month"] = month
 
-
+# experiment dictionary for experimental setup (architecture), target
 experiments = {
     # "exp_template" : {
     #     #Ran by: 
@@ -282,7 +286,6 @@ experiments = {
 }
 
 ### Add data_name to the experiments
-
 for exp_name in experiments.copy():
     for data_name in data_dictionary:
         experiments[exp_name + '_' + data_name] = experiments[exp_name].copy()
