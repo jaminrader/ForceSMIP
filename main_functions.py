@@ -138,7 +138,11 @@ def calculate_metrics(PFtrain, PFval, PFtest, PItrain, PIval, PItest, Ftrain, Fv
     # make the weights
     lats = np.linspace(-90, 90, PFtrain.shape[1]+1)
     lats = [(ll+lh)/2 for ll, lh in zip(lats[:-1], lats[1:])]
-    weights = np.cos(np.deg2rad(lats))[None, :, None, None] # lats is second dim
+    weights = np.cos(np.deg2rad(lats))
+    if settings_dict["target_variable"] != "zmta":
+        weights = weights[None, :, None, None] # lats is second dim for everything but zmta
+    else: 
+        weights = weights[None, None, :, None] 
     # calculate mae, mse, R2 (weighted and unweighted)
     metric_names = ['MAE', 'wMAE', 'MSE', 'wMSE', 'R2', 'wR2']
     metric_funcs = [metrics.MAE, metrics.MAE, metrics.MSE, metrics.MSE, metrics.R2, metrics.R2]
