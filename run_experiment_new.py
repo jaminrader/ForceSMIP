@@ -37,7 +37,9 @@ Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest  = preprocess(sett
 # prepare the data for training (deal with NaNs, standardize data)
 Xtrain_stand, Xval_stand, Xtest_stand, \
     Ttrain_stand, Tval_stand, Ttest_stand, \
-    Ttrain_mean, Ttrain_std, Tval_mean, Tval_std, Ttest_mean, Ttest_std = prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest, settings)
+    Ttrain_mean, Ttrain_std, Tval_mean, Tval_std, Ttest_mean, Ttest_std = prep_data_for_training(Atrain, Ftrain, Itrain,
+                                                                                                 Aval, Fval, Ival,
+                                                                                                 Atest, Ftest, Itest, settings)
 
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------

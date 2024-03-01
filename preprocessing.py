@@ -46,10 +46,8 @@ fullmems = {
     "MPI-ESM1-2-LR": 30,
     "MIROC-ES2L": 30,
 }
-# nlat = 72
-# nlon = 144
 
-
+# load an individual member
 def load_model(file, var, timecut="Tier1", month="annual"):
     # time period to cut on
     timebds = evalPeriods[timecut]
@@ -65,6 +63,7 @@ def load_model(file, var, timecut="Tier1", month="annual"):
         varcut=varcut.isel(time=month_idxs)
     return varcut
 
+# load all members from a model
 def load_models(model, var, timecut="Tier1", ntrainmems=20, month="annual"):
     print(root_dir, cmipTable[var], var, model)
     # get the list of all files (members) for this model and variable
@@ -83,33 +82,10 @@ def load_models(model, var, timecut="Tier1", ntrainmems=20, month="annual"):
         all_ens.append(varcut)
     # get all members into a single xarray data array
     all_ens = xr.concat(all_ens, dim="variant")
-    
     return all_ens
 
-
 def make_data(models=["CESM2", "MIROC6", "CanESM5"], var="tos", timecut="Tier1", mems=np.arange(20), month="annual"):
-    """ 
-    models: a list of models from     "MIROC6
-                                      "CESM2"
-                                      "CanESM5"
-                                      "MPI-ESM1-2-LR"
-                                      "MIROC-ES2L"
-    
-    var: a variable string from     "pr"
-                                    "psl"
-                                    "tas"
-                                    "zmta"
-                                    "tos"
-                                    "siconc"
-                                    "monmaxpr":
-                                    "monmaxtasmax"
-                                    "monmintasmin"
-    
-    timecut: from the evaluation Tiers 
-        "Tier1" ("1950-01-01", "2022-12-31"),
-        "Tier2" ("1900-01-01", "2022-12-31"),
-        "Tier3" ("1979-01-01", "2022-12-31"),
-    
+    """     
     mems: a list of members to use
     """
     # number of members requested
@@ -152,16 +128,10 @@ def make_data(models=["CESM2", "MIROC6", "CanESM5"], var="tos", timecut="Tier1",
     return Xfull, Yforced, Yinternal
 
 
-# def save_npz(settings, A_train, F_train, I_train, A_val, F_val, I_val, A_test, F_test, I_test, A_eval):
-#     os.system('mkdir ' +  settings['npz_dir'])
-#     np.savez(settings['npz_dir'] + settings['data_name'] + '.npz', Atr=A_train, Ftr=F_train, Itr=I_train, 
-#              Ava=A_val, Fva=F_val, Iva=I_val, Ate=A_test, Fte=F_test, Ite=I_test, Aev=A_eval)
-    
 def save_npz(settings, A_train, F_train, I_train, A_val, F_val, I_val, A_test, F_test, I_test):
     os.system('mkdir ' +  settings['npz_dir'])
     np.savez(settings['npz_dir'] + settings['data_name'] + '.npz', Atr=A_train, Ftr=F_train, Itr=I_train, 
              Ava=A_val, Fva=F_val, Iva=I_val, Ate=A_test, Fte=F_test, Ite=I_test)
-
 
 def load_npz(settings):
     npzdat = np.load(settings['npz_dir'] + settings['data_name'] + '.npz')
@@ -175,9 +145,11 @@ def stack_variable(X_tuple):
     return Xout
 
 def make_all_eval_mem(var, timecut, month):
+    # evaluation members are by tier number and letter
     letters = "ABCDEFGHIJ"
     tiernum = timecut[-1]
     evalmems = [tiernum + letter for letter in letters]
+    # for each evaluation member, load that data
     mem_var_arrays = []
     for evalmem in evalmems:
         mem_var_arrays.append(make_eval_mem(evalmem=evalmem, var=var, timecut=timecut, month=month))

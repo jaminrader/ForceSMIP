@@ -24,7 +24,7 @@ def MSE(Dtrue, Dpred, weights = None):
     metrics_arr = metrics_arr[nonanbool]
     return np.average(metrics_arr, weights=weights)
 
-
+# pattern correlation
 def R2(Dtrue, Dpred, weights=1):
     if weights is None:
         weights = 1

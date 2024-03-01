@@ -33,8 +33,6 @@ def preprocess(settings):
                                         month=settings["month"])
             # if it's evaluation data, get the 'all' maps (A) but make the truths nans
             else:        
-                # evalmem = settings['evaluate']
-                #Ate = preprocessing.make_eval_mem(evalmem=evalmem, var=var, timecut=settings["time_range"])
                 Ate = preprocessing.make_all_eval_mem(var=var, timecut=settings["time_range"], month=settings["month"])
                 Fte = np.full_like(Ate, np.nan)
                 Ite = np.full_like(Ate, np.nan)
@@ -70,11 +68,13 @@ def preprocess(settings):
 
 def prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest, settings):
     target_ind = np.where(np.array(settings["input_variable"]) == settings["target_variable"])[0][0]
+    # combining all of the full maps so that nans are consistent across splits
     Aall = np.concatenate([Atrain, Aval, Atest,])
     # Ananbool = np.isnan(Aall).any(axis=(0))
     # for D in [Atrain, Aval, Atest,]:
     #     D[:, Ananbool] = np.nan
 
+    # nan the forced and internal where there are nans in the full maps
     Tnanbool = np.isnan(Aall[..., target_ind:target_ind+1]).any(axis=(0))
     for D in [Ftrain, Itrain, Fval, Ival, Ftest, Itest,]:
         D[:, Tnanbool] = np.nan
@@ -91,6 +91,7 @@ def train_and_predict(Atrain, Aval, Atest,
                       Ttrain_stand, Tval_stand, Ttest_stand,
                       Ttrain_mean, Ttrain_std, Tval_mean, Tval_std, Ttest_mean, Ttest_std,
                       ARGS, settings,):
+    # train the model
     ved, encoder, decoder = VED.train_VED(Xtrain_stand, Ttrain_stand, Xval_stand, Tval_stand, settings)
     # save trained model
     model_savename = os.path.join('saved_models', ARGS.exp_name, ARGS.exp_name+str(settings["seed"])+"_model")
@@ -103,14 +104,12 @@ def train_and_predict(Atrain, Aval, Atest,
 
     # make predictions for the training, validation, and evaluation inputs
     Ptrain_stand, Pval_stand, Ptest_stand = ved.predict(Xtrain_stand), ved.predict(Xval_stand), ved.predict(Xtest_stand)
-
     print('Ptrain_stand shape:', Ptrain_stand.shape)
     print('Xtrain_stand shape:', Xtrain_stand.shape)
 
     # convert back to unstandardized values , note: PF refers to the predicted forced response, 
     # and PI to the predicted internal variablility
-    PFtrain, PFval, PFtest, \
-    PItrain, PIval, PItest = unstandardize_predictions(Atrain, Aval, Atest,
+    PFtrain, PFval, PFtest, PItrain, PIval, PItest = unstandardize_predictions(Atrain, Aval, Atest,
                                                         Ptrain_stand, Pval_stand, Ptest_stand,
                                                         Ttrain_mean, Ttrain_std, 
                                                         Tval_mean, Tval_std, 
@@ -134,11 +133,11 @@ def train_and_predict(Atrain, Aval, Atest,
         
     return PFtrain, PFval, PFtest, PItrain, PIval, PItest
 
-def calculate_metrics(PFtrain, PFval, PFtest, PItrain, PIval, PItest, Ftrain, Fval, Ftest, Itrain, Ival, Itest, verbose=False, settings_dict = None):
+def calculate_metrics(PFtrain, PFval, PFtest, PItrain, PIval, PItest, Ftrain, Fval, Ftest, Itrain, Ival, Itest, verbose=False, settings_dict=None):
     # returns either a dictionary with the computed metrics or appends the results field into a dictionary supplied
     results = {}
 
-    # make the weights
+    # make the weights -- if zmta we have elevation instead of longitudes
     if settings_dict["target_variable"] != "zmta":
         lats = np.linspace(-90, 90, PFtrain.shape[1]+1)
     else:
@@ -148,7 +147,8 @@ def calculate_metrics(PFtrain, PFval, PFtest, PItrain, PIval, PItest, Ftrain, Fv
     if settings_dict["target_variable"] != "zmta":
         weights = weights[None, :, None, None] # lats is second dim for everything but zmta
     else: 
-        weights = weights[None, None, :, None] 
+        weights = weights[None, None, :, None]
+
     # calculate mae, mse, R2 (weighted and unweighted)
     metric_names = ['MAE', 'wMAE', 'MSE', 'wMSE', 'R2', 'wR2']
     metric_funcs = [metrics.MAE, metrics.MAE, metrics.MSE, metrics.MSE, metrics.R2, metrics.R2]
@@ -158,30 +158,18 @@ def calculate_metrics(PFtrain, PFval, PFtest, PItrain, PIval, PItest, Ftrain, Fv
     truth_dats = [Ftrain, Fval, Ftest, Itrain, Ival, Itest,]
     pred_dats = [PFtrain, PFval, PFtest, PItrain, PIval, PItest,]
 
+    # place the calculated values into a dictionary
     for metric_name, metric_func, metric_weight in zip(metric_names, metric_funcs, metric_weights):
         for split_name, truth_dat, pred_dat in zip(split_names, truth_dats, pred_dats):
             metric_val = np.round(metric_func(truth_dat, pred_dat, weights=metric_weight), decimals=3)
             results[metric_name + '_' + split_name] = metric_val
             if verbose:
                 print(metric_name + '_' + split_name + ': ', str(metric_val))
-
     if settings_dict != None:
         settings_dict['results'] = results.copy()
         return settings_dict
     else:
         return results
-
-# def make_json_friendly(specs_orig):
-#     specs = specs_orig.copy()
-#     # Removes numpy objects from dictionary, and turns lists into strings
-#     for imod in specs.keys():
-#             if type(specs[imod][key]) == np.ndarray:
-#                 specs[imod][key] = specs[imod][key].tolist()
-#             if type(specs[imod][key]) == list:
-#                 specs[imod][key] = str(specs[imod][key])
-#             if type(specs[imod][key]) == np.int64:
-#                 specs[imod][key] = int(specs[imod][key])
-#     return specs
 
 def make_json_friendly(specs_orig):
     specs = specs_orig.copy()
@@ -202,3 +190,4 @@ def save_experiment_specs(exp_name, specs_dict, directory):
         json.dump(make_json_friendly(specs_dict), fp)
     with open(directory + exp_name + ".p", 'wb') as fp:
         pickle.dump(specs_dict, fp)
+        

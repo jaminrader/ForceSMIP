@@ -11,8 +11,8 @@
 #SBATCH --job-name=monmaxtasmax_iv
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=jaminr@colostate.edu
-var="monmaxtasmax"
-component="internal"
+var="zmta"
+component="forced"
 python run_experiment_new.py "${component}_test_standard_${var}_annual"
 python run_experiment_new.py "${component}_test_standard_${var}_1"
 python run_experiment_new.py "${component}_test_standard_${var}_2"

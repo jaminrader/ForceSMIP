@@ -8,7 +8,7 @@ lat = np.linspace(-88.75, 88.75, 72)
 lat_n = np.size(lat)
 lon = np.linspace(1.25, 358.8, 144)
 lon_n = np.size(lon)
-plev = np.linspace(1000, 200, 37) #Incorrect
+plev = np.linspace(1000, 200, 17)
 plev_n = np.size(plev)
 
 months = ["10","20","30","40","50","60",
@@ -16,17 +16,22 @@ months = ["10","20","30","40","50","60",
 memberID = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
 component = "forced"
 variable = "zmta"#"monmintasmin"
+IS_Zonal_avg = True
+if IS_Zonal_avg:
+    shapes = [17, 72]
+else:
+    shapes = [72, 144]
 
-loadDirectoryPath = "/barnes-scratch/mafern/ForceSMIP/ForceSMIP/saved_predictions/"
-saveDirectoryPath = "/barnes-scratch/mafern/ForceSMIP/ForceSMIP/SubmissionFiles/"
+forcesmip_path = "./"
+loadDirectoryPath = forcesmip_path+"saved_predictions/"
+saveDirectoryPath = forcesmip_path+"SubmissionFiles/"
 Tier = "T1"
-IS_Zonal_avg = False
 
 PlotExample, sample_n = False, 10
 CreateSaveFile = True
 CheckSavedFile = False #not complete
 
-predictions = np.empty(shape = (12,730,72,144,1))
+predictions = np.empty(shape = (12,730,shapes[0],shapes[1],1))
 for i, month in enumerate(months):
     predictionFile = component + "_test_standard_" + variable + "_" + month + "_preds.npz"
     f = np.load(loadDirectoryPath + predictionFile)
@@ -40,7 +45,7 @@ for i, month in enumerate(months):
 
     predictions[i,:,:,:,:] = PFtest
 
-final_data = np.empty(shape = (10,876,72,144))
+final_data = np.empty(shape = (10,876,shapes[0],shapes[1]))
 for i, member in enumerate(memberID):
     data_member = predictions[:,(73*i):(73*(i+1)),:,:,0]
 
@@ -74,7 +79,7 @@ for i, member in enumerate(memberID):
 print(np.shape(final_data))
 
 plt.contourf(final_data[0,0,:,:])
-plt.savefig("/barnes-scratch/mafern/ForceSMIP/ForceSMIP/evaluate/figures/tempfig.png")
+plt.savefig(forcesmip_path+"evaluate/figures/tempfig.png")
 
 ###############################
 ###############################
@@ -109,7 +114,7 @@ for i, member in enumerate(memberID):
             ts = nc.Dataset(saveDirectoryPath + saveFilename + ".nc", 'w' , format='NETCDF4')
             ts_plev = ts.createDimension('plev',plev_n)
             ts_lat = ts.createDimension('lat',lat_n)
-            ts_time = ts.createDimension('time', np.size(Ptrain[:,0,0]))
+            ts_time = ts.createDimension('time', np.size(final_data[0,:,0,0]))
 
             forced_component = ts.createVariable('forced','f4',('time', 'plev', 'lat'))
             forced_component[:,:,:] = final_data[i,:,:,:]
@@ -123,7 +128,7 @@ for i, member in enumerate(memberID):
             ts = nc.Dataset(saveDirectoryPath + saveFilename + ".nc", 'w' , format='NETCDF4')
             ts_lat = ts.createDimension('lat',lat_n)
             ts_lon = ts.createDimension('lon',lon_n)
-            ts_time = ts.createDimension('time', np.size(Ptrain[:,0,0]))
+            ts_time = ts.createDimension('time', np.size(final_data[0,:,0,0]))
 
             forced_component = ts.createVariable('forced','f4',('time','lat','lon'))
             forced_component[:,:,:] = final_data[i,:,:,:]
@@ -131,25 +136,25 @@ for i, member in enumerate(memberID):
             ts.close()
 
     if CheckSavedFile:
-    if IS_Zonal_avg:
-        f = nc.Dataset("/barnes-scratch/mafern/ForceSMIP/ForceSMIP/SubmissionFiles/TOS_T1_AutoEncoder_TeamPlanetGlitter_TEST.nc")
-        plotdata = f["forced"]
-        
-        plt.figure(dpi = (200), figsize = (6,4))
-        cs = plt.pcolormesh(plev, lat, plotdata[0,:,:], cmap = "Reds")
-        cbar = plt.colorbar(cs,shrink=0.7,orientation='horizontal',label='Surface Air Temperature (C)', format='%.1f')#, pad=5)
-        plt.title("Sample " + str(sample_n))
-        plt.savefig(saveDirectoryPath + saveFilename + "sampleOpen")
-    else:
-        f = nc.Dataset("/barnes-scratch/mafern/ForceSMIP/ForceSMIP/SubmissionFiles/TOS_T1_AutoEncoder_TeamPlanetGlitter_TEST.nc")
-        plotdata = f["forced"]
-        
-        plt.figure(dpi = (200), figsize = (6,4))
-        ax=plt.axes(projection= ccrs.PlateCarree())
-        data, lonsr = add_cyclic_point(plotdata[sample_n, :, :], coord=lon)
-        cs = plt.pcolormesh(lonsr, lat, data, cmap = "Reds")
-        ax.coastlines()
-        cbar = plt.colorbar(cs,shrink=0.7,orientation='horizontal',label='Surface Air Temperature (C)', format='%.1f')#, pad=5)
-        # cbar.set_label(colorbar_title)
-        plt.title("Sample " + str(sample_n))
-        plt.savefig(saveDirectoryPath + saveFilename + "sampleOpen")
+        if IS_Zonal_avg:
+            f = nc.Dataset(saveDirectoryPath+"TOS_T1_AutoEncoder_TeamPlanetGlitter_TEST.nc")
+            plotdata = f["forced"]
+            
+            plt.figure(dpi = (200), figsize = (6,4))
+            cs = plt.pcolormesh(plev, lat, plotdata[0,:,:], cmap = "Reds")
+            cbar = plt.colorbar(cs,shrink=0.7,orientation='horizontal',label='Surface Air Temperature (C)', format='%.1f')#, pad=5)
+            plt.title("Sample " + str(sample_n))
+            plt.savefig(saveDirectoryPath + saveFilename + "sampleOpen")
+        else:
+            f = nc.Dataset(saveDirectoryPath+"SubmissionFiles/TOS_T1_AutoEncoder_TeamPlanetGlitter_TEST.nc")
+            plotdata = f["forced"]
+            
+            plt.figure(dpi = (200), figsize = (6,4))
+            ax=plt.axes(projection= ccrs.PlateCarree())
+            data, lonsr = add_cyclic_point(plotdata[sample_n, :, :], coord=lon)
+            cs = plt.pcolormesh(lonsr, lat, data, cmap = "Reds")
+            ax.coastlines()
+            cbar = plt.colorbar(cs,shrink=0.7,orientation='horizontal',label='Surface Air Temperature (C)', format='%.1f')#, pad=5)
+            # cbar.set_label(colorbar_title)
+            plt.title("Sample " + str(sample_n))
+            plt.savefig(saveDirectoryPath + saveFilename + "sampleOpen")
