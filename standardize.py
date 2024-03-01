@@ -176,11 +176,17 @@ def standardize_all_data(Atr, Ava, Ate,
                     Itr, Iva, Ite,
                     settings):
     # Standardize the inputs
-    Xtr_stand = self_standardize(self_standardize(Atr))
+    if settings['target_component'] == 'internal':
+        Xtr_stand = self_standardize(Atr)
+        Xva_stand = self_standardize(Ava)
+        Xte_stand = self_standardize(Ate)
+    elif settings['target_component'] == 'forced':
+        Xtr_stand = Atr.copy()
+        Xva_stand = Ava.copy()
+        Xte_stand = Ate.copy()
+
     Xtr_stand, __, __ = standardize_for_each_member(Xtr_stand)
-    Xva_stand = self_standardize(self_standardize(Ava))
     Xva_stand, __, __ = standardize_for_each_member(Xva_stand)
-    Xte_stand = self_standardize(self_standardize(Ate))
     Xte_stand, __, __ = standardize_for_each_member(Xte_stand)
 
     # Standardize the outputs
@@ -196,9 +202,6 @@ def standardize_all_data(Atr, Ava, Ate,
     Iva_stand, Iva_mean, Iva_std  = standardize_for_each_member(Iva)
     Ite_stand, Ite_mean, Ite_std  = standardize_for_each_member(Ite)
 
-    Ftr_stand, Ftr_mean, Ftr_std = standardize_for_each_member(Ftr)
-    Fva_stand, Fva_mean, Fva_std  = standardize_for_each_member(Fva)
-    Fte_stand, Fte_mean, Fte_std  = standardize_for_each_member(Fte)
     if settings['target_component'] == 'internal':
         Ttr_stand = Itr_stand
         Tva_stand = Iva_stand

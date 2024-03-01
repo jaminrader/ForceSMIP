@@ -103,20 +103,55 @@ data_dictionary = {
         "month": "annual",
     },
 
-    "JAN_Train4_Val4_MIROC-ES2L_tos_tos":{
-        "input_variable": ("tos",),
-        "target_variable": "tos",
-        "train_models"  : ("CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR",),
-        "val_models"    : ("CESM2","MIROC6","CanESM5","MPI-ESM1-2-LR",),
-        "test_models"   : None,
+    "Train4_Val4_CESM2_all_pr":{
+        "input_variable": ("pr","tos",'psl','tas',),
+        "target_variable": "pr",
+        "train_models"  : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "val_models"    : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "test_models"   : ("CESM2",),
         "train_members" : np.arange(18),
         "val_members"   : np.arange(18, 25),
-        "test_members"  : None,
+        "test_members"  : np.arange(25),
         "time_range" : "Tier1",
-        "evaluate": '1A',
-        "month": 1, #january
+        "evaluate": False,
+        "month": "annual",
+    },
+
+    "Train4_Val4_CESM2_pr_pr":{
+        "input_variable": ("pr",),
+        "target_variable": "pr",
+        "train_models"  : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "val_models"    : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "test_models"   : ("CESM2",),
+        "train_members" : np.arange(18),
+        "val_members"   : np.arange(18, 25),
+        "test_members"  : np.arange(25),
+        "time_range" : "Tier1",
+        "evaluate": False,
+        "month": "annual",
+    },
+
+    "standard":{
+        "train_models"  : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L","CESM2"),
+        "val_models"    : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "test_models"   : (),
+        "train_members" : np.arange(18),
+        "val_members"   : np.arange(18, 25),
+        "test_members"  : np.arange(25),
+        "time_range" : "Tier1",
+        "evaluate": True,
     },
 }
+
+months = ["annual","1","2","3","4","5","6","7","8","9","10","11","12",]
+vars = ["pr", "psl", "tas", "zmta", "tos", "siconc", "monmaxpr", "monmaxtasmax", "monmintasmin",]
+for var in vars:
+    for month in months:
+        key = 'standard_' + var + '_' + str(month)
+        data_dictionary[key] = data_dictionary['standard'].copy()
+        data_dictionary[key]["input_variable"] = (var,)
+        data_dictionary[key]["target_variable"] = var
+        data_dictionary[key]["month"] = month 
 
 experiments = {
     # "exp_template" : {
@@ -185,7 +220,7 @@ experiments = {
         "variational_loss": 0.0001
     },
 
-    "test" : {
+    "internal_test" : {
 
         # Standardization + prediction component
         "target_component": "internal",
@@ -200,9 +235,31 @@ experiments = {
         
         # Architecture specs
         "encoding_nodes" : [1000,1000,],
-        "code_nodes"     : 1000,
+        "code_nodes"     : 100,
         "activation"     : "tanh",
-        "variational_loss": 0.0001
+        "variational_loss": 0.,
+        "ridge"  :  0,
+    },
+
+    "forced_test" : {
+
+        # Standardization + prediction component
+        "target_component": "forced",
+        'save_predictions': True,
+
+        # Network specs
+        "seed"          : 0 ,
+        "learn_rate" : 0.0001,
+        "patience"      : 100,
+        "batch_size"    : 64,
+        "max_epochs"    : 15,
+        
+        # Architecture specs
+        "encoding_nodes" : [100,100,],
+        "code_nodes"     : 5,
+        "activation"     : "tanh",
+        "variational_loss": 0.,
+        "ridge"  :  0.,
     },
 }
 

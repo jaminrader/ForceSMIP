@@ -168,10 +168,19 @@ def load_npz(settings):
                                                         npzdat['Ate'], npzdat['Fte'], npzdat['Ite'],)
     return Atr, Ftr, Itr, Ava, Fva, Iva, Ate, Fte, Ite
     
-
 def stack_variable(X_tuple):
     Xout = np.stack(X_tuple, axis=-1)
     return Xout
+
+def make_all_eval_mem(var, timecut):
+    letters = "ABCDEFGHIJ"
+    tiernum = timecut[-1]
+    evalmems = [tiernum + letter for letter in letters]
+    mem_var_arrays = []
+    for evalmem in evalmems:
+        mem_var_arrays.append(make_eval_mem(evalmem=evalmem, var=var, timecut=timecut))
+    eval_array = np.concatenate(mem_var_arrays, axis=0)
+    return eval_array
 
 def make_eval_mem(evalmem="1H", var="tos", timecut="Tier1"):
     # "evalmem can be 1A through 1J, so determines the member"

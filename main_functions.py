@@ -30,8 +30,9 @@ def preprocess(settings):
                                         timecut=settings["time_range"], mems=settings["test_members"])
             # if it's evaluation data, get the 'all' maps (A) but make the truths nans
             else:        
-                evalmem = settings['evaluate']
-                Ate = preprocessing.make_eval_mem(evalmem=evalmem, var=var, timecut=settings["time_range"])
+                # evalmem = settings['evaluate']
+                #Ate = preprocessing.make_eval_mem(evalmem=evalmem, var=var, timecut=settings["time_range"])
+                Ate = preprocessing.make_all_eval_mem(var=var, timecut=settings["time_range"])
                 Fte = np.full_like(Ate, np.nan)
                 Ite = np.full_like(Ate, np.nan)
 
@@ -66,10 +67,10 @@ def preprocess(settings):
 
 def prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftest, Itest, settings):
     target_ind = np.where(np.array(settings["input_variable"]) == settings["target_variable"])[0][0]
-    Aall = np.concatenate([Atrain, Aval, Atest])
-    Ananbool = np.isnan(Aall).any(axis=(0))
-    for D in [Atrain, Aval, Atest,]:
-        D[:, Ananbool] = np.nan
+    Aall = np.concatenate([Atrain, Aval, Atest,])
+    # Ananbool = np.isnan(Aall).any(axis=(0))
+    # for D in [Atrain, Aval, Atest,]:
+    #     D[:, Ananbool] = np.nan
 
     Tnanbool = np.isnan(Aall[..., target_ind:target_ind+1]).any(axis=(0))
     for D in [Ftrain, Itrain, Fval, Ival, Ftest, Itest,]:

@@ -30,21 +30,29 @@ def build_encoder(Xtrain, settings):
     input_layer = Input(shape=Xtrain.shape[1:]) 
     lays = Flatten()(input_layer)
     
+    first_lay = True
     for hidden in settings["encoding_nodes"]:
-        lays = Dense(hidden, activation=settings["activation"],
-                       kernel_regularizer=tf.keras.regularizers.l1_l2(l1=0.00, l2=0.00),
-                       bias_initializer=tf.keras.initializers.RandomNormal(seed=settings["seed"]),
-                       kernel_initializer=tf.keras.initializers.RandomNormal(seed=settings["seed"]))(lays)
+        if first_lay:
+            lays = Dense(hidden, activation=settings["activation"],
+                        kernel_regularizer=tf.keras.regularizers.l1_l2(l1=0.00, l2=settings["ridge"]),
+                        bias_initializer=tf.keras.initializers.RandomNormal(seed=settings["seed"]),
+                        kernel_initializer=tf.keras.initializers.RandomNormal(seed=settings["seed"]))(lays)
+            first_lay = False
+        else:
+            lays = Dense(hidden, activation=settings["activation"],
+                        kernel_regularizer=tf.keras.regularizers.l1_l2(l1=0.00, l2=0.00),
+                        bias_initializer=tf.keras.initializers.RandomNormal(seed=settings["seed"]),
+                        kernel_initializer=tf.keras.initializers.RandomNormal(seed=settings["seed"]))(lays)
 
-    code_mean = Dense(settings["code_nodes"])(lays)
-    code_log_var = Dense(settings["code_nodes"])(lays)
-    code = Sampling()([code_mean, code_log_var])
+    code = Dense(settings["code_nodes"])(lays)
+    # code_log_var = Dense(settings["code_nodes"])(lays)
+    # code = Sampling()([code_mean, code_log_var])
 
     encoder = Model(inputs = [input_layer],
-                outputs = [code_mean, code_log_var, code],
+                outputs = [code],
                 name = "encoder")
     
-    return encoder, input_layer, code_mean, code_log_var, code
+    return encoder, input_layer, code
     
 
 def build_decoder(Xtrain, Ttrain, settings):
@@ -70,15 +78,15 @@ def build_decoder(Xtrain, Ttrain, settings):
 
 def build_VED(Xtrain, Ttrain, settings):
 
-    encoder, input_layer, code_mean, code_log_var, code = build_encoder(Xtrain, settings)
+    encoder, input_layer, code = build_encoder(Xtrain, settings)
     decoder = build_decoder(Xtrain, Ttrain, settings)
 
-    code_mean, code_log_var, code = encoder(input_layer)
+    code = encoder(input_layer)
     reconstruction = decoder(code)
     ved = Model(inputs=[input_layer], outputs=[reconstruction], name='VED')
 
-    latent_loss = -0.5 * K.sum(1 + code_log_var - K.exp(code_log_var) - K.square(code_mean), axis=-1)
-    ved.add_loss(K.mean(latent_loss * settings['variational_loss']))
+    # latent_loss = -0.5 * K.sum(1 + code_log_var - K.exp(code_log_var) - K.square(code_mean), axis=-1)
+    # ved.add_loss(K.mean(latent_loss * settings['variational_loss']))
 
     return ved, encoder, decoder
 
