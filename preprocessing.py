@@ -11,7 +11,7 @@ if machine == 'casper':
     root_dir = "/glade/campaign/cgd/cas/asphilli/ForceSMIP/"
 elif machine == 'asha':
     root_dir = "/barnes-scratch/DATA/ForceSMIP/"
-    
+
 cmipTable = {
     "pr": "Amon",
     "psl": "Amon",
@@ -50,33 +50,33 @@ fullmems = {
 # nlon = 144
 
 
-def load_model(model, var, timecut="Tier1", ntrainmems=20, month="annual"):
+def load_model(file, var, timecut="Tier1", month="annual"):
+    # time period to cut on
+    timebds = evalPeriods[timecut]
+    ds = xr.open_dataset(file)
+    # select the variable
+    varin = ds[cmipVar[var]]
+    # get the correct time period
+    varcut = varin.sel(time=slice(timebds[0],timebds[1]))
+    if month == 'annual':
+        varcut = varcut.groupby('time.year').mean()  
+    else:
+        month_idxs=varcut.groupby('time.month').groups[int(month)]
+        varcut=varcut.isel(time=month_idxs)
+    return varcut
+
+def load_models(model, var, timecut="Tier1", ntrainmems=20, month="annual"):
     print(root_dir, cmipTable[var], var, model)
     # get the list of all files (members) for this model and variable
     filelist = root_dir + "Training/" + cmipTable[var] + "/" + var + "/" + model + "/" + var + "*.nc"
     filelist = np.array(glob.glob(filelist))
     sorted = np.argsort([float(filelist[ii][filelist[ii].find('_r')+2:filelist[ii].find('i1')]) for ii in range(len(filelist))])
     filelist = filelist[sorted]
-    # time period to cut on
-    timebds = evalPeriods[timecut]
-
+    
     # go through each file and load, append
     all_ens = []
     for ifile, file in enumerate(filelist[:ntrainmems]):
-        ds = xr.open_dataset(file)
-        # select the variable
-        varin = ds[cmipVar[var]]
-        # get the correct time period
-        varcut = varin.sel(time=slice(timebds[0],timebds[1]))
-        # make data yearly
-        #########################################################################
-        # currently always using yearly data
-        #########################################################################
-        if month == 'annual':
-            varcut = varcut.groupby('time.year').mean()  
-        else:
-            month_idxs=varcut.groupby('time.month').groups[month]
-            varcut=varcut.isel(time=month_idxs)
+        varcut = load_model(file, var, timecut, month)
         # add coordinate for concatenating after the loop
         varcut = varcut.assign_coords({"variant":ifile+1})
         # append into a list
@@ -124,7 +124,7 @@ def make_data(models=["CESM2", "MIROC6", "CanESM5"], var="tos", timecut="Tier1",
         # load the members for this model/variable into an xarray
         # returns the correct time period given the tier
         # note it loads all members, so the forced response is correct, then picks members based on mems
-        da = load_model(model, var, timecut, nfullmems, month=month)
+        da = load_models(model, var, timecut, nfullmems, month=month)
         # convert from xarray to a numpy array: dimensions are [members, time, lat, lon]
         da_np = np.asarray(da)
         # get the forced response as the ensemble mean across all members (0th dimension)
@@ -174,40 +174,23 @@ def stack_variable(X_tuple):
     Xout = np.stack(X_tuple, axis=-1)
     return Xout
 
-def make_all_eval_mem(var, timecut):
+def make_all_eval_mem(var, timecut, month):
     letters = "ABCDEFGHIJ"
     tiernum = timecut[-1]
     evalmems = [tiernum + letter for letter in letters]
     mem_var_arrays = []
     for evalmem in evalmems:
-        mem_var_arrays.append(make_eval_mem(evalmem=evalmem, var=var, timecut=timecut))
+        mem_var_arrays.append(make_eval_mem(evalmem=evalmem, var=var, timecut=timecut, month=month))
     eval_array = np.concatenate(mem_var_arrays, axis=0)
     return eval_array
 
-def make_eval_mem(evalmem="1H", var="tos", timecut="Tier1"):
+def make_eval_mem(evalmem="1H", var="tos", timecut="Tier1", month="annual"):
     # "evalmem can be 1A through 1J, so determines the member"
     # get a member from one of the evaulation data sets
     filelist = root_dir + "Evaluation-"+timecut+"/" + cmipTable[var] + "/" + var + "/" + var + "*" + evalmem + "*.nc"
     # glob the full file name (zero index to remove from list)
     file = glob.glob(filelist)[0]
-    ds = xr.open_dataset(file)
-    # get the specified variable and make yearly
-    varin = ds[cmipVar[var]]
-    varmean = varin.groupby("time.year").mean()
+    varmean = load_model(file, var, timecut="Tier1", month=month)
     # return as a numpy array    
     return np.asarray(varmean)
-
-
-def make_eval_mem_monthly(evalmem="1H", var="tos", timecut="Tier1"):
-    "evalmem can be 1A through 1J, so determines the member"
-    # get a member from one of the evaulation data sets
-    filelist = root_dir + "Evaluation-"+timecut+"/" + cmipTable[var] + "/" + var + "/" + var + "*" + evalmem + "*.nc"
-    # glob the full file name (zero index to remove from list)
-    file = glob.glob(filelist)[0]
-    # get the specified variable
-    ds = xr.open_dataset(file)
-    varin = ds[cmipVar[var]]
-    # return as a numpy array 
-    return np.asarray(varin)
-
 
