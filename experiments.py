@@ -155,6 +155,19 @@ data_dictionary = {
         "time_range" : "Tier1",
         "evaluate": False,
     },
+
+    "CESMvalall":{
+        "train_models"  : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "val_models"    : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
+        "test_models"   : ("CESM2",),
+        "train_members" : np.arange(18),
+        "val_members"   : np.arange(18, 25),
+        "test_members"  : np.arange(25),
+        "input_variable" : ('tos','tas','psl','pr',)
+
+        "time_range" : "Tier1",
+        "evaluate": False,
+    },
 }
 
 # handle running a different model for each month
@@ -171,6 +184,11 @@ for var in vars:
         key = 'CESMval_' + var + '_' + str(month)
         data_dictionary[key] = data_dictionary['CESMval'].copy()
         data_dictionary[key]["input_variable"] = (var,)
+        data_dictionary[key]["target_variable"] = var
+        data_dictionary[key]["month"] = month
+
+        key = 'CESMvalall_' + var + '_' + str(month)
+        data_dictionary[key] = data_dictionary['CESMvalall'].copy()
         data_dictionary[key]["target_variable"] = var
         data_dictionary[key]["month"] = month
 
