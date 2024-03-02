@@ -90,9 +90,9 @@ def Plot_Gobal_Map(lat, lon, plot_data, title, min, max, colorbar, colorbar_titl
 def CalcGlobalMean(data, lat):
     weights = np.cos(np.deg2rad(data.lat))
     weights.name = "weights"
-    
     data_weighted = data.weighted(weights)
-    weighted_mean = data_weighted.mean(("lon", "lat"))
+    dims = list(data.dims)
+    weighted_mean = data_weighted.mean(dims[1:])#(("lon", "lat"))
     return(weighted_mean)
 
 def CalcPatternCorrelation(y_true, y_pred):  
