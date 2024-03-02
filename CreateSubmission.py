@@ -14,14 +14,14 @@ lat = np.linspace(-88.75, 88.75, 72)
 lat_n = np.size(lat)
 lon = np.linspace(1.25, 358.8, 144)
 lon_n = np.size(lon)
-plev = np.linspace(1000, 200, 17) #Incorrect
+plev = np.linspace(1000, 200, 17)
 plev_n = np.size(plev)
 
 months = ["10","20","30","40","50","60",
           "70","80","90","100","110","120"]
 memberID = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
-component = "internal" #internal
-variable = "tos"#"monmintasmin"
+component = "forced" #internal
+variable = "zmta"#"monmintasmin"
 if variable == "zmta":
     IS_Zonal_avg = True
     shape = [17, 72]
@@ -122,7 +122,18 @@ for i, member in enumerate(memberID):
 
     if PlotForcedTrend:
         if IS_Zonal_avg:
-            print("Does not work")
+            globalmean = xr.DataArray(final_data[i,:,:,:], dims = ['time','plev','lat'])
+            globalmean["time"] = date
+            globalmean["lat"] = lat[:]
+            globalmean["plev"] = plev[:]
+
+            globalmean = ef.CalcGlobalMean(globalmean, lat)
+
+            plt.figure()
+            plt.plot(date, globalmean, label = memberID[i])
+            plt.legend()
+            plt.title("Predicted Forced Response for " + variable + " "+ memberID[i])
+            plt.savefig(DirectoryPath + "/evaluate/figures/predictedForcedResponses" + memberID[i] + ".png")
         else:
             globalmean = xr.DataArray(final_data[i,:,:,:], dims = ['time','lat','lon'])
             globalmean["time"] = date
