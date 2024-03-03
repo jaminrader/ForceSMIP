@@ -3,6 +3,7 @@ import numpy as np
 import experiments as exp
 import tensorflow as tf
 import random
+import os
 from main_functions import preprocess, prep_data_for_training, train_and_predict, calculate_metrics, save_experiment_specs
 
 
@@ -18,6 +19,11 @@ ARGS = PARSER.parse_args()
 # get experiment settings
 # assert np.isin(ARGS.exp_name, exp.experiments.keys()), "no experiment with the name" + ARGS.exp_name + ", current experiments:" + exp.experiments.keys()
 settings = exp.get_experiment(ARGS.exp_name)
+
+os.system('mkdir ' + settings["npz_dir"])
+os.system('mkdir ' + settings["pred_dir"])
+os.system('mkdir ' + settings["exp_specs_dir"])
+os.system('mkdir ' + settings["tune_specs_dir"])
 
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
