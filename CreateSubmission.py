@@ -20,8 +20,8 @@ plev_n = np.size(plev)
 months = ["10","20","30","40","50","60",
           "70","80","90","100","110","120"]
 memberID = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
-component = "forced" #internal
-variable = "zmta"#"monmintasmin"
+component = "internal" #internal forced
+variable = "zmta"# tos, tas, pr, psl, zmta, monmaxtasmax, monmintasmin, monmaxpr
 if variable == "zmta":
     IS_Zonal_avg = True
     shape = [17, 72]
@@ -40,9 +40,9 @@ if Tier == "T2":
 if Tier == "T3":
     date = pd.date_range(start='1/1/1979', end='1/1/2023', freq='M')
 
-PlotForcedTrend = True
-PlotExample, sample_n = False, 10
 CreateSaveFile = True
+PlotForcedTrend = False
+PlotExample, sample_n = False, 10
 CheckSavedFile = False
 
 predictions = np.empty(shape = (12,730,shape[0],shape[1],1))
@@ -50,6 +50,11 @@ for i, month in enumerate(months):
     predictionFile = component + "_test_standard_" + variable + "_" + month + "_preds.npz"
     f = np.load(loadDirectoryPath + predictionFile)
     PFtest = f['PFtest'] #(730, 72, 144, 1)
+    
+    # used to mask to the prediction with nans
+    Ftrain = f["Ftrain"][:730,:,:,:]
+    PFtest[np.isnan(Ftrain)] = np.nan
+
     predictions[i,:,:,:,:] = PFtest
 
 final_data = np.empty(shape = (10,876,shape[0],shape[1]))
@@ -87,38 +92,31 @@ for i, member in enumerate(memberID):
 ###############################
 ###############################
 for i, member in enumerate(memberID):
-    saveFilename = variable + "_" + memberID[i] + "_" + Tier + "_AutoEncoder" + component + "_TPG_TEST"
+    saveFilename = variable + "_" + memberID[i] + "_" + Tier + "_EncoderDecoder" + component.title() + "_TPG"
 
     if CreateSaveFile:
         if IS_Zonal_avg:
+            save_data = xr.DataArray(final_data[i,:,:,:], dims = ['time','plev','lat'],
+                                coords = [date, plev, lat])
+            print(type(save_data))
+            print(save_data)
+            save_data.name = "forced"
+
             exists = os.path.isfile(saveDirectoryPath + saveFilename + ".nc")
             if exists:
                 os.remove(saveDirectoryPath + saveFilename + ".nc")
 
-            ts = nc.Dataset(saveDirectoryPath + saveFilename + ".nc", 'w' , format='NETCDF4')
-            ts_plev = ts.createDimension('plev',plev_n)
-            ts_lat = ts.createDimension('lat',lat_n)
-            ts_time = ts.createDimension('time', np.size(date))
-
-            forced_component = ts.createVariable('forced','f4',('time', 'plev', 'lat'))
-            forced_component[:,:,:] = final_data[i,:,:,:]
-
-            ts.close()
+            save_data.to_netcdf(saveDirectoryPath + saveFilename + ".nc")
         else:
+            save_data = xr.DataArray(final_data[i,:,:,:], dims = ['time','lat','lon'],
+                                coords = [date, lat, lon])
+            save_data.name = "forced"
+            
             exists = os.path.isfile(saveDirectoryPath + saveFilename + ".nc")
             if exists:
                 os.remove(saveDirectoryPath + saveFilename + ".nc")
 
-            ts = nc.Dataset(saveDirectoryPath + saveFilename + ".nc", 'w' , format='NETCDF4')
-            ts_lat = ts.createDimension('lat',lat_n)
-            ts_lon = ts.createDimension('lon',lon_n)
-            ts_time = ts.createDimension('time', np.size(date))
-
-            forced_component = ts.createVariable('forced','f4',('time','lat','lon'))
-            forced_component[:,:,:] = final_data[i,:,:,:]
-
-            ts.close()
-            print("saved")
+            save_data.to_netcdf(saveDirectoryPath + saveFilename + ".nc")
 
     if PlotForcedTrend:
         if IS_Zonal_avg:
@@ -168,7 +166,7 @@ for i, member in enumerate(memberID):
 
     if CheckSavedFile:
         if IS_Zonal_avg:
-            f = nc.Dataset(saveDirectoryPath + saveFilename + ".nc")
+            f = xr.open_dataset(saveDirectoryPath + saveFilename + ".nc")
             plotdata = f["forced"]
             
             plt.figure(dpi = (200), figsize = (6,4))
@@ -177,7 +175,7 @@ for i, member in enumerate(memberID):
             plt.title(variable + " " + memberID[i])
             plt.savefig("/barnes-scratch/mafern/ForceSMIP/ForceSMIP/evaluate/figures/" + saveFilename + "_OPEN.png")
         else:
-            f = nc.Dataset(saveDirectoryPath + saveFilename + ".nc")
+            f = xr.open_dataset(saveDirectoryPath + saveFilename + ".nc")
             plotdata = f["forced"]
             
             plt.figure(dpi = (200), figsize = (6,4))
