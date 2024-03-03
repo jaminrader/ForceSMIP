@@ -163,7 +163,7 @@ data_dictionary = {
         "train_members" : np.arange(18),
         "val_members"   : np.arange(18, 25),
         "test_members"  : np.arange(25),
-        "input_variable" : ('tos','tas','psl','pr',)
+        "input_variable" : ('tos','tas','psl','pr',),
 
         "time_range" : "Tier1",
         "evaluate": False,
