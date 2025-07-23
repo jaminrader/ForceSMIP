@@ -21,20 +21,19 @@ def unstandardize(D, Dmean, Dstd):
     return D * Dstd + Dmean
 
 # standardize by year for each member
-def standardize_for_each_member(D_orig):
-    n_yrs = 73 # HARDCODE FIXME
+def standardize_for_each_member(D_orig, n_yrs):
     D = D_orig.reshape(D_orig.shape[0]//n_yrs, n_yrs, D_orig.shape[1], D_orig.shape[2], D_orig.shape[3])
     Dmean = D.mean(axis=(1,))[:, None, ...]
     Dstd = D.std(axis=(1,))[:, None, ...]
     D = np.nan_to_num((D - Dmean) / Dstd).reshape(D_orig.shape)
     return D, Dmean, Dstd
 
-# unstandardize by year for each member
-def unstandardize_for_each_member(D_orig, Dmean, Dstd):
-    n_yrs = 73 # HARDCODE FIXME
-    D = D_orig.reshape(D_orig.shape[0]//n_yrs, n_yrs, D_orig.shape[1], D_orig.shape[2], D_orig.shape[3])
-    D = np.nan_to_num(D * Dstd + Dmean).reshape(D_orig.shape)
-    return D
+# # unstandardize by year for each member
+# def unstandardize_for_each_member(D_orig, Dmean, Dstd):
+#     n_yrs = 124 # HARDCODE FIXME
+#     D = D_orig.reshape(D_orig.shape[0]//n_yrs, n_yrs, D_orig.shape[1], D_orig.shape[2], D_orig.shape[3])
+#     D = np.nan_to_num(D * Dstd + Dmean).reshape(D_orig.shape)
+#     return D
 
 # unstandardize and return forced based on what is predicted (forced directly, or internal as full-internal)
 def unstandardize_predictions(Atrain, Aval, Atest,
@@ -98,9 +97,15 @@ def standardize_all_data(Atr, Ava, Ate,
         Xte_stand = Ate.copy()
 
     # standardize by year
-    Xtr_stand, __, __ = standardize_for_each_member(Xtr_stand)
-    Xva_stand, __, __ = standardize_for_each_member(Xva_stand)
-    Xte_stand, __, __ = standardize_for_each_member(Xte_stand)
+    if settings["time_range"] == 'Tier1':
+        n_years = 73
+    elif settings["time_range"] == 'Tier2':
+        n_years = 124
+    else:
+        n_years = 45
+    Xtr_stand, __, __ = standardize_for_each_member(Xtr_stand, n_years)
+    Xva_stand, __, __ = standardize_for_each_member(Xva_stand, n_years)
+    Xte_stand, __, __ = standardize_for_each_member(Xte_stand, n_years)
 
     # standardize all the splits by the training mean and std for the forced
     fmean = Ftr.mean(axis=(0))
