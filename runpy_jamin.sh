@@ -11,19 +11,22 @@
 #SBATCH --job-name=monmaxtasmax_iv
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=jaminr@colostate.edu
-var="zmta"
-component="forced"
-python run_experiment_new.py "${component}_test_standard_${var}_annual"
-python run_experiment_new.py "${component}_test_standard_${var}_1"
-python run_experiment_new.py "${component}_test_standard_${var}_2"
-python run_experiment_new.py "${component}_test_standard_${var}_3"
-python run_experiment_new.py "${component}_test_standard_${var}_4"
-python run_experiment_new.py "${component}_test_standard_${var}_5"
-python run_experiment_new.py "${component}_test_standard_${var}_6"
-python run_experiment_new.py "${component}_test_standard_${var}_7"
-python run_experiment_new.py "${component}_test_standard_${var}_8"
-python run_experiment_new.py "${component}_test_standard_${var}_9"
-python run_experiment_new.py "${component}_test_standard_${var}_10"
-python run_experiment_new.py "${component}_test_standard_${var}_11"
-python run_experiment_new.py "${component}_test_standard_${var}_12"
+
+experiment_name="internal_test_standard"
+var="tos" # tos, tas, pr, psl, zmta, monmaxtasmax, monmintasmin, monmaxpr, mrso
+
+# python3 run_experiment_new.py "${experiment_name}_${var}_annual"
+python3 run_experiment_new.py "${experiment_name}_${var}_1"
+python3 run_experiment_new.py "${experiment_name}_${var}_2"
+python3 run_experiment_new.py "${experiment_name}_${var}_3"
+python3 run_experiment_new.py "${experiment_name}_${var}_4"
+python3 run_experiment_new.py "${experiment_name}_${var}_5"
+python3 run_experiment_new.py "${experiment_name}_${var}_6"
+python3 run_experiment_new.py "${experiment_name}_${var}_7"
+python3 run_experiment_new.py "${experiment_name}_${var}_8"
+python3 run_experiment_new.py "${experiment_name}_${var}_9"
+python3 run_experiment_new.py "${experiment_name}_${var}_10"
+python3 run_experiment_new.py "${experiment_name}_${var}_11"
+python3 run_experiment_new.py "${experiment_name}_${var}_12"
+
 
