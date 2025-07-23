@@ -7,4 +7,6 @@ exp_data/
 *.DS_
 evaluate/figures/*
 exp_results/*
+SubmissionFiles/
+.vscode/
 
