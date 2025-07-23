@@ -8,7 +8,6 @@ def add_data_to_experiment(settings, data_name):
 
 # get settings for this experiment, set up directories
 def get_experiment(exp_name, settings_overwrite=None):
-
     if settings_overwrite is None:
         settings = experiments[exp_name]
     else:
@@ -145,6 +144,28 @@ data_dictionary = {
         "evaluate": True,
     },
 
+    "tier2":{
+        "train_models"  : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L","CESM2"),
+        "val_models"    : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L","CESM2"),
+        "test_models"   : (),
+        "train_members" : np.arange(18),
+        "val_members"   : np.arange(18, 25),
+        "test_members"  : np.arange(25),
+        "time_range" : "Tier2",
+        "evaluate": True,
+    },
+
+    "tier3":{
+        "train_models"  : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L","CESM2"),
+        "val_models"    : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L","CESM2"),
+        "test_models"   : (),
+        "train_members" : np.arange(18),
+        "val_members"   : np.arange(18, 25),
+        "test_members"  : np.arange(25),
+        "time_range" : "Tier3",
+        "evaluate": True,
+    },
+
     "CESMval":{
         "train_models"  : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
         "val_models"    : ("MIROC6","CanESM5","MPI-ESM1-2-LR","MIROC-ES2L",),
@@ -177,6 +198,18 @@ for var in vars:
     for month in months:
         key = 'standard_' + var + '_' + str(month)
         data_dictionary[key] = data_dictionary['standard'].copy()
+        data_dictionary[key]["input_variable"] = (var,)
+        data_dictionary[key]["target_variable"] = var
+        data_dictionary[key]["month"] = month
+
+        key = 'tier2_' + var + '_' + str(month)
+        data_dictionary[key] = data_dictionary['tier2'].copy()
+        data_dictionary[key]["input_variable"] = (var,)
+        data_dictionary[key]["target_variable"] = var
+        data_dictionary[key]["month"] = month
+
+        key = 'tier3_' + var + '_' + str(month)
+        data_dictionary[key] = data_dictionary['tier3'].copy()
         data_dictionary[key]["input_variable"] = (var,)
         data_dictionary[key]["target_variable"] = var
         data_dictionary[key]["month"] = month
