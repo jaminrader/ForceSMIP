@@ -1,4 +1,4 @@
-machine = 'asha' # 'casper' or 'asha'
+machine = '' # 'casper' or 'asha'
 
 # I/O / data wrangling
 import glob
@@ -11,6 +11,8 @@ if machine == 'casper':
     root_dir = "/glade/campaign/cgd/cas/asphilli/ForceSMIP/"
 elif machine == 'asha':
     root_dir = "/barnes-scratch/DATA/ForceSMIP/"
+else:
+    root_dir = '/Volumes/Data/Martin_Fernandez/ForceSMIP/'
 
 cmipTable = {
     "pr": "Amon",
@@ -22,6 +24,7 @@ cmipTable = {
     "monmaxpr": "Aday",
     "monmaxtasmax": "Aday",
     "monmintasmin": "Aday",
+    "mrso": "Lmon",
 }
 cmipVar = {
     "pr": "pr",
@@ -33,11 +36,12 @@ cmipVar = {
     "monmaxpr": "pr",
     "monmaxtasmax": "tasmax",
     "monmintasmin": "tasmin",
+    "mrso": "mrso",
 }
 evalPeriods = {
     "Tier1": ("1950-01-01", "2022-12-31"),
-    "Tier2": ("1900-01-01", "2022-12-31"),
-    "Tier3": ("1979-01-01", "2022-12-31"),
+    "Tier2": ("1900-01-01", "2023-12-31"),
+    "Tier3": ("1979-01-01", "2023-12-31"),
 }
 fullmems = {
     "MIROC6": 50,
@@ -67,7 +71,7 @@ def load_model(file, var, timecut="Tier1", month="annual"):
 def load_models(model, var, timecut="Tier1", ntrainmems=20, month="annual"):
     print(root_dir, cmipTable[var], var, model)
     # get the list of all files (members) for this model and variable
-    filelist = root_dir + "Training/" + cmipTable[var] + "/" + var + "/" + model + "/" + var + "*.nc"
+    filelist = root_dir + "Training-Ext/" + cmipTable[var] + "/" + var + "/" + model + "/" + var + "*.nc"
     filelist = np.array(glob.glob(filelist))
     sorted = np.argsort([float(filelist[ii][filelist[ii].find('_r')+2:filelist[ii].find('i1')]) for ii in range(len(filelist))])
     filelist = filelist[sorted]
@@ -146,7 +150,10 @@ def stack_variable(X_tuple):
 
 def make_all_eval_mem(var, timecut, month):
     # evaluation members are by tier number and letter
-    letters = "ABCDEFGHIJ"
+    if timecut == 'Tier1':
+        letters = "ABCDEFGHIJ"
+    else:
+        letters = "ABCDEFGHIJKLMNOPQRSTU"
     tiernum = timecut[-1]
     evalmems = [tiernum + letter for letter in letters]
     # for each evaluation member, load that data
