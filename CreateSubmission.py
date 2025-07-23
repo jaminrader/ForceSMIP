@@ -10,42 +10,46 @@ import sys
 sys.path.insert(1, "evaluate/")
 import evaluate_functions as ef
 
-lat = np.linspace(-88.75, 88.75, 72) 
-lat_n = np.size(lat)
-lon = np.linspace(1.25, 358.8, 144)
-lon_n = np.size(lon)
-plev = np.linspace(1000, 200, 17)
-plev_n = np.size(plev)
-
-months = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120"]
-memberID = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]
-
 
 experiment_name = "internal_test_standard"
 variable = "tos"# tos, tas, pr, psl, zmta, monmaxtasmax, monmintasmin, monmaxpr, mrso
+Tier = "T2"
+#####################################################################################
 if variable == "zmta":
     IS_Zonal_avg = True
     shape = [plev_n, lat_n]
 else:
     IS_Zonal_avg = False
     shape = [lat_n, lon_n]
+if Tier == "T1":
+    date = pd.date_range(start='1/1/1950', end='1/1/2023', freq='M')
+    memberID = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+if Tier == "T2":
+    date = pd.date_range(start='1/1/1900', end='1/1/2024', freq='M')
+    memberID = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]
+if Tier == "T3":
+    date = pd.date_range(start='1/1/1979', end='1/1/2024', freq='M')
+    memberID = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]
+nyears = int(len(date)/12)
+
+lat = np.linspace(-88.75, 88.75, 72) 
+lat_n = np.size(lat)
+lon = np.linspace(1.25, 358.8, 144)
+lon_n = np.size(lon)
+plev = np.linspace(1000, 200, 17)
+plev_n = np.size(plev)
+months = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120"]
 
 DirectoryPath = "./"
 loadDirectoryPath = DirectoryPath + "saved_predictions/"
 saveDirectoryPath = DirectoryPath + "SubmissionFiles/"
-Tier = "T2"
-if Tier == "T1":
-    date = pd.date_range(start='1/1/1950', end='1/1/2023', freq='M')
-if Tier == "T2":
-    date = pd.date_range(start='1/1/1900', end='1/1/2024', freq='M')
-if Tier == "T3":
-    date = pd.date_range(start='1/1/1979', end='1/1/2024', freq='M')
-nyears = int(len(date)/12)
 
 CreateSaveFile = True
 PlotForcedTrend = False
 PlotExample, sample_n = False, 10
 CheckSavedFile = False
+
+
 
 predictions = np.empty(shape=(12, nyears*np.size(memberID), shape[0], shape[1], 1))
 # for i, month in enumerate(months):
