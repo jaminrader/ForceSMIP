@@ -59,7 +59,7 @@ def load_model(file, var, timecut="Tier1", month="annual"):
     # select the variable
     varin = ds[cmipVar[var]]
     # get the correct time period
-    varcut = varin.sel(time=slice(timebds[0],timebds[1]))
+    varcut = varin.sel(time=slice(timebds[0], timebds[1]))
     if month == 'annual':
         varcut = varcut.groupby('time.year').mean()  
     else:
@@ -169,7 +169,7 @@ def make_eval_mem(evalmem="1H", var="tos", timecut="Tier1", month="annual"):
     filelist = root_dir + "Evaluation-"+timecut+"/" + cmipTable[var] + "/" + var + "/" + var + "*" + evalmem + "*.nc"
     # glob the full file name (zero index to remove from list)
     file = glob.glob(filelist)[0]
-    varmean = load_model(file, var, timecut="Tier1", month=month)
+    varmean = load_model(file, var, timecut=timecut, month=month)
     # return as a numpy array    
     return np.asarray(varmean)
 
