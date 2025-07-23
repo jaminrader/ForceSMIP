@@ -70,9 +70,11 @@ def prep_data_for_training(Atrain, Ftrain, Itrain, Aval, Fval, Ival, Atest, Ftes
     target_ind = np.where(np.array(settings["input_variable"]) == settings["target_variable"])[0][0]
     # combining all of the full maps so that nans are consistent across splits
     Aall = np.concatenate([Atrain, Aval, Atest,])
-    # Ananbool = np.isnan(Aall).any(axis=(0))
-    # for D in [Atrain, Aval, Atest,]:
-    #     D[:, Ananbool] = np.nan
+    # if tier2 + pr, then mask out the land
+    if settings["time_range"] == 'Tier2' and settings["target_variable"] == 'pr':
+        Ananbool = np.isnan(Aall).any(axis=(0))
+        for D in [Atrain, Aval, Atest,]:
+            D[:, Ananbool] = np.nan
 
     # nan the forced and internal where there are nans in the full maps
     Tnanbool = np.isnan(Aall[..., target_ind:target_ind+1]).any(axis=(0))
