@@ -14,7 +14,9 @@
 
 experiment_name="internal_test_standard"
 var="tos" # tos, tas, pr, psl, zmta, monmaxtasmax, monmintasmin, monmaxpr, mrso
+tier="T2"
 
+# run each month model and save predictions
 # python3 run_experiment_new.py "${experiment_name}_${var}_annual"
 python3 run_experiment_new.py "${experiment_name}_${var}_1"
 python3 run_experiment_new.py "${experiment_name}_${var}_2"
@@ -28,5 +30,5 @@ python3 run_experiment_new.py "${experiment_name}_${var}_9"
 python3 run_experiment_new.py "${experiment_name}_${var}_10"
 python3 run_experiment_new.py "${experiment_name}_${var}_11"
 python3 run_experiment_new.py "${experiment_name}_${var}_12"
-
-
+# create the save submission .nc file
+python3 CreateSubmission.py experiment_name var tier

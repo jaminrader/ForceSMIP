@@ -7,14 +7,22 @@ import netCDF4 as nc
 import pandas as pd
 import os
 import sys
+import argparse
 sys.path.insert(1, "evaluate/")
 import evaluate_functions as ef
 
-
-experiment_name = "internal_test_standard"
-variable = "tos"# tos, tas, pr, psl, zmta, monmaxtasmax, monmintasmin, monmaxpr, mrso
-Tier = "T2"
-#####################################################################################
+# -------------------------------------------------------------------------------------------
+# set up parser (run via command line, e.g. python3 CreateSubmission.py exp_name var tier)
+# e.g., python3 CreateSubmission.py 'internal_test_standard' 'tos' 'T2'
+PARSER = argparse.ArgumentParser()
+PARSER.add_argument('exp_name', type=str)
+PARSER.add_argument('var', type=str)
+PARSER.add_argument('tier', type=str)
+ARGS = PARSER.parse_args()
+experiment_name = ARGS.exp_name
+variable = ARGS.var # tos, tas, pr, psl, zmta, monmaxtasmax, monmintasmin, monmaxpr, mrso
+Tier = ARGS.tier
+# -------------------------------------------------------------------------------------------
 if variable == "zmta":
     IS_Zonal_avg = True
     shape = [plev_n, lat_n]
@@ -43,11 +51,12 @@ months = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "1
 DirectoryPath = "./"
 loadDirectoryPath = DirectoryPath + "saved_predictions/"
 saveDirectoryPath = DirectoryPath + "SubmissionFiles/"
+figureDirectoryPath = DirectoryPath + "evaluate/figures/"
 
 CreateSaveFile = True
-PlotForcedTrend = False
-PlotExample, sample_n = False, 10
-CheckSavedFile = False
+PlotForcedTrend = True
+PlotExample, sample_n = True, 10
+CheckSavedFile = True
 
 
 
@@ -124,6 +133,10 @@ for i, member in enumerate(memberID):
 
             save_data.to_netcdf(saveDirectoryPath + saveFilename + ".nc")
 
+###############################
+###############################
+###############################
+
     if PlotForcedTrend:
         if IS_Zonal_avg:
             globalmean = xr.DataArray(final_data[i, :, :, :], dims = ['time', 'plev', 'lat'])
@@ -137,7 +150,7 @@ for i, member in enumerate(memberID):
             plt.plot(date, globalmean, label=memberID[i])
             plt.legend()
             plt.title("Predicted Forced Response for " + variable + " " + memberID[i])
-            plt.savefig(DirectoryPath + "/evaluate/figures/predictedForcedResponses" + memberID[i] + ".png")
+            plt.savefig(DirectoryPath + "evaluate/figures/predictedForcedResponses" + memberID[i] + ".png")
         else:
             globalmean = xr.DataArray(final_data[i, :, :, :], dims = ['time', 'lat', 'lon'])
             globalmean["time"] = date
@@ -150,7 +163,7 @@ for i, member in enumerate(memberID):
             plt.plot(date, globalmean, label=memberID[i])
             plt.legend()
             plt.title("Predicted Forced Response for " + variable + " " + memberID[i])
-            plt.savefig(DirectoryPath + "/evaluate/figures/predictedForcedResponses" + memberID[i] + ".png")
+            plt.savefig(DirectoryPath + "evaluate/figures/predictedForcedResponses" + memberID[i] + ".png")
 
     if PlotExample:
         if IS_Zonal_avg:
@@ -158,7 +171,7 @@ for i, member in enumerate(memberID):
             cs = plt.pcolormesh(plev, lat, final_data[0, sample_n, :, :], cmap="Reds")
             cbar = plt.colorbar(cs, shrink=0.7, orientation='horizontal', label='Surface Air Temperature (C)', format='%.1f')#, pad=5)
             plt.title("Sample " + str(sample_n))
-            plt.savefig(saveDirectoryPath + saveFilename + "sample")
+            plt.savefig(DirectoryPath + "evaluate/figures/sample" + memberID[i] + ".png")
         else:
             plt.figure(dpi=(200), figsize=(6, 4))
             ax=plt.axes(projection= ccrs.PlateCarree())
@@ -168,7 +181,7 @@ for i, member in enumerate(memberID):
             cbar = plt.colorbar(cs, shrink=0.7, orientation='horizontal',label='Surface Air Temperature (C)', format='%.1f')#, pad=5)
             # cbar.set_label(colorbar_title)
             plt.title("Sample " + str(sample_n))
-            plt.savefig(saveDirectoryPath + saveFilename + "sample")
+            plt.savefig(DirectoryPath + "evaluate/figures/sample" + memberID[i] + ".png")
 
     if CheckSavedFile:
         if IS_Zonal_avg:
@@ -179,7 +192,7 @@ for i, member in enumerate(memberID):
             cs = plt.pcolormesh(plotdata[0, :, :], cmap="Reds")
             cbar = plt.colorbar(cs)
             plt.title(variable + " " + memberID[i])
-            plt.savefig("/barnes-scratch/mafern/ForceSMIP/ForceSMIP/evaluate/figures/" + saveFilename + "_OPEN.png")
+            plt.savefig(DirectoryPath + "evaluate/figures/OPEN" + memberID[i] + ".png")
         else:
             f = xr.open_dataset(saveDirectoryPath + saveFilename + ".nc")
             plotdata = f["forced"]
@@ -188,4 +201,4 @@ for i, member in enumerate(memberID):
             cs = plt.pcolormesh(lon, lat, plotdata[0, :, :], cmap ="Reds")
             cbar = plt.colorbar(cs)
             plt.title(variable + " " + memberID[i])
-            plt.savefig("/barnes-scratch/mafern/ForceSMIP/ForceSMIP/evaluate/figures/" + saveFilename + "_OPEN.png")
+            plt.savefig(DirectoryPath + "evaluate/figures/OPEN" + memberID[i] + ".png")
